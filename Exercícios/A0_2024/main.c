@@ -11,15 +11,84 @@ typedef struct teddy_machine {
     struct teddy_machine *previous;
 } teddy_machine;
 
+/* Auxiliary functions */
+int isTherePlush(teddy_machine *list){
+    if(list == NULL)
+        return 0;
+    return 1;
+}
+
 /* List functions */
 
-teddy_machine* create_list (unsigned int machines){ /* INSTRUÇÃO: Implemente a função */ }
+teddy_machine* create_list (unsigned int machines){ 
+    struct teddy_machine *first, *new, *aux;
 
-teddy_machine* select_machine (teddy_machine *list, unsigned int place){ /* INSTRUÇÃO: Implemente a função */ }
+    if(!(first = malloc(sizeof(struct teddy_machine))))
+        return NULL;
 
-teddy_machine* remove_machine (teddy_machine *list, teddy_machine *remove) { /* INSTRUÇÃO: Implemente a função */ }
+    first->id = 1;
+    first->probability = 5;
+    first->next = first;
+    first->previous = first;
 
-void destroy_list (teddy_machine *list){/* INSTRUÇÃO: Implemente a função */ }
+    aux = first;
+
+    for(int i = 2; i<=machines; i++){
+        if(!(new = malloc(sizeof(struct teddy_machine))))
+            return NULL;
+        
+        new->id = i;
+        new->probability = 5;
+
+        aux->next = new;
+        new->previous = aux;
+        new->next = first;
+        first->previous = new;
+
+        aux = new;
+    }
+
+    return first;
+ }
+
+teddy_machine* select_machine (teddy_machine *list, unsigned int place){ 
+    struct teddy_machine *aux;
+
+    aux = list;
+    
+    //o quanto anda a pessoa selecionando a mÃ¡quina
+    for(int i = 1; i <= place; i++){
+        aux = aux->next;
+    }
+
+    return aux;
+ }
+
+teddy_machine* remove_machine (teddy_machine *list, teddy_machine *remove) { 
+    struct teddy_machine *aux;
+
+    if(list == remove){
+        
+    }
+ }
+
+void destroy_list (teddy_machine *list){
+    struct teddy_machine *aux, *remove;
+    if(list == NULL)
+        return;
+
+    aux = list->next;
+    remove = aux;
+    
+    while(aux != NULL){
+        remove = aux;
+        aux = remove->next;
+        free(remove);
+        
+    }
+
+    free(list);
+}
 
 /* Randomization functions */
 
@@ -83,11 +152,22 @@ int main(int argc, char *argv[]){
     unsigned int machine_place, machine_attempt;
     for (unsigned int r = 0; r < rounds; r++){
         printf("\n============================ ROUND %u ============================\n", r+1);
-        machine_place = get_place(machines); /* Define a localização da máquina da rodada, não considera máquinas sem urso */
-        machine_attempt = get_attempt(); /* Define a tentativa da rodada; se for menor ou igual à probabilidade da máquina selecionada, o urso foi pego */
+        machine_place = get_place(machines); /* Define a localizaï¿½ï¿½o da mï¿½quina da rodada, nï¿½o considera mï¿½quinas sem urso */
+        machine_attempt = get_attempt(); /* Define a tentativa da rodada; se for menor ou igual ï¿½ probabilidade da mï¿½quina selecionada, o urso foi pego */
 
-        /* INSTRUÇÃO: Implemente a lógica do seu programa aqui */
-        /* INSTRUÇÃO: Utilize a função "print_attempt" antes do "print_available_machines"! */
+        //se existir mÃ¡quinas ainda, ou seja, se a lista de mÃ¡quinas nÃ£o for null
+        if(!isTherePlush(list)){
+            break;
+        }
+
+        teddy_machine *selected = select_machine(list, machine_place);
+        if(machine_attempt <= selected->probability ){
+            //ganhar
+            remove_machine(list, selected);
+        } else
+            selected->probability +=2;
+
+        print_attempt(selected, machine_attempt);
 
         print_available_machines(list);
         printf("==================================================================\n");
