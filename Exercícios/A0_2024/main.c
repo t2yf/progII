@@ -67,24 +67,50 @@ teddy_machine* select_machine (teddy_machine *list, unsigned int place){
 teddy_machine* remove_machine (teddy_machine *list, teddy_machine *remove) { 
     struct teddy_machine *aux;
 
+    printf("list: %d\n", list->id);
+    printf("remove: %d\n", remove->id);
+
+    if(list == NULL || remove == NULL)
+        return NULL;
+
+    //se for primeiro item da 
     if(list == remove){
-        
+        aux = list->next;
+        list->previous->next = aux;
+        aux->previous = list->previous;
+
+        free(remove);
+        return list;
     }
+
+    //se for último item da lista
+    if(list->previous == remove){
+        aux = remove->previous;
+        aux->next = list;
+        list->previous = aux;
+
+        free(remove);
+        return list;
+    }
+
+    //se não for primeiro nem último
+    remove->previous->next = remove->next;
+    remove->next->previous = remove->previous;
+
+    free(remove);
+    return list;
  }
 
 void destroy_list (teddy_machine *list){
-    struct teddy_machine *aux, *remove;
+    struct teddy_machine *aux;
     if(list == NULL)
         return;
 
     aux = list->next;
-    remove = aux;
-    
-    while(aux != NULL){
-        remove = aux;
-        aux = remove->next;
-        free(remove);
-        
+
+    while(aux != list){
+        aux = aux->next;
+        free(aux->previous);
     }
 
     free(list);
@@ -147,6 +173,7 @@ int main(int argc, char *argv[]){
     }
 
     teddy_machine *list = create_list(machines);
+    teddy_machine *selected;
     srand(seed);
 
     unsigned int machine_place, machine_attempt;
@@ -160,18 +187,23 @@ int main(int argc, char *argv[]){
             break;
         }
 
-        teddy_machine *selected = select_machine(list, machine_place);
+       selected = select_machine(list, machine_place);
+       print_attempt(selected, machine_attempt);
         if(machine_attempt <= selected->probability ){
             //ganhar
             remove_machine(list, selected);
         } else
             selected->probability +=2;
 
-        print_attempt(selected, machine_attempt);
+        
 
         print_available_machines(list);
         printf("==================================================================\n");
+
+        selected = NULL;
     }
+
+    destroy_list(list);
 
     return 0;
 }
