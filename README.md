@@ -9,7 +9,7 @@ usando técnicas de algoritmos e estruturas de dados clássicos considerando a n
 - A0-2024/1: Implementar uma simulação de máquina de pelúcias utilizando lista circular duplamente encadeada.
 
 ## Trabalhos
-- A0:
+- A0 [Jukebox Mercenária]: Implementar uma jukebox com fila de prioridade de acordo com valor colocado como entrada pelo usuário.
 - A1:
 - A2:
 - A3:
