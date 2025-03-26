@@ -4,18 +4,6 @@
 #include "pedido.h"
 
 
-void imprime(jukefila* j){
-    pedido *atual;
-    atual = j->inicio;
-
-    while(atual != NULL){
-        printf("\n %f ", atual->valor);
-        atual = atual->proximo;
-    }
-
-    printf("\n");
-}
-
 jukefila* criar_jukefila(){
     jukefila *f;
 
@@ -89,7 +77,6 @@ void inserir_jukefila(pedido* elemento, jukefila* fila){
     fila->final = elemento;
 
 
-    imprime(fila);
 
 }
 pedido* consumir_jukefila(jukefila* fila){
@@ -97,25 +84,19 @@ pedido* consumir_jukefila(jukefila* fila){
 
     /*fila vazia*/
     if(fila == NULL|| fila->inicio ==NULL){
-        printf("Fila não alocada\n");
-        return NULL;
-    }
-
-    if(fila->inicio->proximo  == NULL){
-        free(fila);
         return NULL;
     }
 
     aux = fila->inicio;
+    if(aux->proximo  == NULL){
+        fila->inicio = fila->final = NULL;
+        return aux;
+    }
 
     fila->inicio = aux->proximo;
     fila->inicio->anterior = NULL;
 
-    imprime(fila);
-
-    destruir_pedido(aux);
-
-    return fila->inicio;  
+    return aux;  
 }
 unsigned int contar_jukefila(jukefila* fila){
     pedido *aux;
@@ -139,7 +120,7 @@ void destruir_jukefila(jukefila *fila){
     pedido *aux;
 
     /*fila vazia*/
-    if(!fila){
+    if(fila == NULL){
         printf("Fila não alocada\n");
         return;
     }
