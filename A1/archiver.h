@@ -6,7 +6,6 @@
 #include <time.h>
 
 #define MAX_NOME 1025
-#define MAX_ARQ 1000
 
 typedef struct{
     char nome[MAX_NOME];
@@ -20,8 +19,9 @@ typedef struct{
 } Membro;
 
 typedef struct {
-    Membro membros[MAX_ARQ]; //Dinâmico!!! -> Vetor de structs -> Função para dar malloc, inicializa_archiver
     int qtde_membros;
+    int cap; // Para o realloc
+    Membro *membros; //Vetor dinâmico de membros(structs) -> Função para dar malloc, inicializa_archiver
 } Diretorio;
 
 typedef struct{
@@ -31,6 +31,9 @@ typedef struct{
 
 
 /*Inicializar o archiver*/
-Archiver *inicializar_archiver(Archiver *archive, char *nome);
+//Archiver *inicializar_archiver(Archiver *archive, char *nome);
+//void verifica_existe_archiver(Archiver *archiver);
+
+Archiver *verifica_existe_archiver(const char *nome);
 
 #endif

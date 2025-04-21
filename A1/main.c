@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h> 
 #include <stdlib.h>
+#include "archiver.h"
 
 
 /*Funções auxiliares*/
@@ -19,8 +20,10 @@ void insere_comprimido(){
     printf("inseriu comprimido\n");
 }
 
-void extrai(){
-    printf("extraiu\n");
+void extrai(Archiver *arq){
+ 
+    if(arq)
+        printf("extraiu\n");
 }
 
 void retirar(){
@@ -73,7 +76,8 @@ int main(int argc, char *argv[]){
             return 1;
         }
 
-        //inicializar archiver
+        //Criar ou pegar archiver
+        Archiver *archiver = verifica_existe_archiver(arq);
 
         mover();
         return 0; 
@@ -91,7 +95,9 @@ int main(int argc, char *argv[]){
         return 1;
     }
 
-    //inicializar archiver
+    //Criar ou pegar archiver
+    Archiver *archiver = verifica_existe_archiver(arq);
+    
 
     if(strcmp(op, "-ip") == 0)
         inserir();
@@ -105,7 +111,7 @@ int main(int argc, char *argv[]){
             return 0;
         }
         //Extração de um elemento ou mais
-        extrai();
+        extrai(archiver);
     }
         
 
