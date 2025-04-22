@@ -2,6 +2,7 @@
 #include <string.h> 
 #include <stdlib.h>
 #include "archiver.h"
+#include "manip_arc.h"
 
 
 /*Funções auxiliares*/
@@ -97,7 +98,10 @@ int main(int argc, char *argv[]){
 
     //Criar ou pegar archiver
     Archiver *archiver = verifica_existe_archiver(arq);
-    
+
+    //Contar quantidade de membros
+    int num_membros = contar_membros(membros);
+    printf("quantidade de membros: %d \n", num_membros);
 
     if(strcmp(op, "-ip") == 0)
         inserir();

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 void extrair_info_membro(Archiver *archiver, const char *nome_arq, Membro *membro);
+int contar_membros(char **membros);
 
 //verificar se membro já existe no archive
 

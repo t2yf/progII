@@ -1,5 +1,14 @@
 #include "manip_arc.h"
 
+//Contar a quantidade de membros
+int contar_membros(char **membros){
+    int i = 0;
+    while(membros[i] != NULL){
+        i++;
+    }
+    return i;
+}
+
 //Extrair as informações com o membro fechado (stat)
 void extrair_info_membro(Archiver *archiver, const char *nome_arq, Membro *membro){
     struct stat info;

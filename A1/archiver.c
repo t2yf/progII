@@ -51,7 +51,11 @@ Archiver *verifica_existe_archiver(const char *nome){
         }
         
         //Salvar diretorio no archiver
-        fwrite(&new_mem->dir, sizeof(Diretorio), 1, new_file);
+        //fwrite(&new_mem->dir, sizeof(Diretorio), 1, new_file);
+        fwrite(&new_mem->dir.qtde_membros, sizeof(int), 1, new_file);
+        fwrite(&new_mem->dir.cap, sizeof(int), 1, new_file);
+        fwrite(new_mem->dir.membros, sizeof(Membro), new_mem->dir.qtde_membros, new_file);
+        
         fclose(new_file);
         return new_mem;
     }
