@@ -108,8 +108,7 @@ int main(int argc, char *argv[]){
         inserir_membros(archiver, membros, num_membros);
 
     else if(strcmp(op, "-ic") == 0)
-        insere_comprimido();
-
+        inserir_membros_comprimidos(archiver, membros, num_membros);
     else if(strcmp(op, "-x") == 0){
         if(argc == 4){
             printf("Extração de tudo\n");
