@@ -20,7 +20,7 @@ typedef struct{
 
 typedef struct {
     int qtde_membros;
-    int cap; // Para o realloc
+    //int cap; // Para o realloc
     Membro *membros; //Vetor dinâmico de membros(structs) -> Função para dar malloc, inicializa_archiver
 } Diretorio;
 

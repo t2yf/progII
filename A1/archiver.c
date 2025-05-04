@@ -16,7 +16,7 @@ Archiver *inicializar_archiver(const char *nome){
 
     //Inicializar diretorio
     archive->dir.qtde_membros = 0;
-    archive->dir.cap = 1;
+    //archive->dir.cap = 1;
     archive->dir.membros = malloc(sizeof(Membro));
 
     if(archive->dir.membros == NULL){
@@ -53,7 +53,7 @@ Archiver *verifica_existe_archiver(const char *nome){
         //Salvar diretorio no archiver
         //fwrite(&new_mem->dir, sizeof(Diretorio), 1, new_file);
         fwrite(&new_mem->dir.qtde_membros, sizeof(int), 1, new_file);
-        fwrite(&new_mem->dir.cap, sizeof(int), 1, new_file);
+        //fwrite(&new_mem->dir.cap, sizeof(int), 1, new_file);
         fwrite(new_mem->dir.membros, sizeof(Membro), new_mem->dir.qtde_membros, new_file);
         
         fclose(new_file);
@@ -74,7 +74,7 @@ Archiver *verifica_existe_archiver(const char *nome){
     //Ler as informações e atribuir 
         //*Obs: Seguir a mesma ordem do fwrite
     fread(&archiver->dir.qtde_membros, sizeof(int), 1, arq);
-    fread(&archiver->dir.cap, sizeof(int), 1, arq);
+    //fread(&archiver->dir.cap, sizeof(int), 1, arq);
 
     //Alocar o vetor de membros conforme a capacidade
     archiver->dir.membros = malloc(sizeof(Membro) * archiver->dir.qtde_membros); 

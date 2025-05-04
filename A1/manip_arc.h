@@ -6,8 +6,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define TAM_BUFFER 1024
+
 void extrair_info_membro(Archiver *archiver, const char *nome_arq, Membro *membro);
 int contar_membros(char **membros);
+
+//movimentar membros
+void mover_membros(FILE *arq, unsigned long inicio, unsigned long final, unsigned long referencia);
 
 //verificar se membro já existe no archive
 

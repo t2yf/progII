@@ -1,7 +1,7 @@
 #include "archiver.h"
 
 
-
+void inserir_membros(Archiver *archiver, char **membros, int num_arq);
 // insere com compressão
     // comprimir -> biblioteca
 

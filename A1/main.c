@@ -2,6 +2,7 @@
 #include <string.h> 
 #include <stdlib.h>
 #include "archiver.h"
+#include "inserir.h"
 #include "manip_arc.h"
 
 
@@ -101,10 +102,10 @@ int main(int argc, char *argv[]){
 
     //Contar quantidade de membros
     int num_membros = contar_membros(membros);
-    printf("quantidade de membros: %d \n", num_membros);
+    //printf("quantidade de membros: %d \n", num_membros);
 
     if(strcmp(op, "-ip") == 0)
-        inserir();
+        inserir_membros(archiver, membros, num_membros);
 
     else if(strcmp(op, "-ic") == 0)
         insere_comprimido();

@@ -22,15 +22,35 @@ void extrair_info_membro(Archiver *archiver, const char *nome_arq, Membro *membr
     //Puxar os atributos
     strncpy(membro->nome, nome_arq, MAX_NOME);
     membro->nome[MAX_NOME -1] = '\0';
-
-    //!!!Tirar os espaços do nome do membro????
-
     membro->UID = info.st_uid;
     membro->tamanho_original = info.st_size;
     membro->tamanho_comprimido = info.st_size;
     membro->data_modificacao = info.st_mtime;
 
-    ///!!!! O que colocar?
     membro->ordem = archiver->dir.qtde_membros;
     membro->offset = 0; //Mudar depois
+}
+
+
+void mover_membros(FILE *arq, unsigned long inicio, unsigned long final, unsigned long referencia){
+    //Colocar o "membro" no buffer
+    size_t tam = final - inicio;
+    char *buffer = malloc(tam);
+
+    if(buffer == NULL){
+        perror("Erro de alocação do buffer\n");
+        return;
+    }
+
+    fseek(arq, inicio, SEEK_SET);
+    fread(buffer, 1, tam, arq);
+
+    //Procurar a referência com o fseek
+    fseek(arq, referencia, SEEK_SET);
+
+    //Escrever o "membro" do buffer onde o fseek aponta
+    fwrite(buffer, 1, tam, arq);
+
+    free(buffer);
+
 }
