@@ -2,6 +2,7 @@
 
 
 void inserir_membros(Archiver *archiver, char **membros, int num_arq);
+void inserir_membros_comprimidos(Archiver *archiver, char **membros, int num_arq);
 // insere com compressão
     // comprimir -> biblioteca
 

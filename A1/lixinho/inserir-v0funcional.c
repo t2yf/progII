@@ -1,7 +1,7 @@
 #include "inserir.h"
 #include "manip_arc.h"
 /*!!!!SE O MEMBRO JÁ EXISTIR -> SUBSTITUIR*/
-
+/*TRATAR CASO SE O ARQUIVO FOR MTO MAIOR QUE 1024*/
 void inserir_membros(Archiver *archiver, char **membros, int num_arq){
     /*IMPORTANTE: Como essa operação vem após o verifica_existe_archiver o *archiver já possui o arquivo.vc carregado*/
 
@@ -38,48 +38,19 @@ void inserir_membros(Archiver *archiver, char **membros, int num_arq){
 
         if(!novo_membro){
             perror("Erro ao abrir o novo membro\n");
-            return;
-            //continue;
+            continue;
         }
 
         //Descobrir tamanho do novo membro e lendo para o buffer
         fseek(novo_membro, 0, SEEK_END);
         size_t tam_membro = ftell(novo_membro);
         rewind(novo_membro);
+        fread(buffer, tam_membro, 1, novo_membro);
 
-        //Se o arquivo for muito grande
-        if(tam_membro > TAM_BUFFER){
-            size_t aux_tam_membro = tam_membro;
-            while(aux_tam_membro > 0){
-                size_t tam_ler;
-                if(aux_tam_membro < TAM_BUFFER)
-                    tam_ler = aux_tam_membro;
-                else 
-                    tam_ler = TAM_BUFFER;
-
-                fread(buffer, tam_ler, 1, novo_membro);
-                //Escrever parte do novo membro no archiver
-                fseek(arq, 0, SEEK_END);
-                long final_arq = ftell(arq);
-                fwrite(buffer, tam_ler, 1, arq);
-
-                //Pegar outro pedaço do arquivo
-                aux_tam_membro = aux_tam_membro - tam_ler;
-
-            }
-        } else{
-            fread(buffer, tam_membro, 1, novo_membro);
-            // Escrevendo o novo membro no archiver
-            fseek(arq, 0, SEEK_END);
-            long final_arq = ftell(arq);
-            fwrite(buffer, tam_membro, 1, arq);
-        }
-        
-
-        // // Escrevendo o novo membro no archiver
-        // fseek(arq, 0, SEEK_END);
-        // long final_arq = ftell(arq);
-        // fwrite(buffer, tam_membro, 1, arq);
+        // Escrevendo o novo membro no archiver
+        fseek(arq, 0, SEEK_END);
+        long final_arq = ftell(arq);
+        fwrite(buffer, tam_membro, 1, arq);
 
         fclose(novo_membro);
 
