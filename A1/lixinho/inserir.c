@@ -133,3 +133,8 @@ unsigned long fim_dir = tam_dir + tam_info;
   archiver->dir.membros[archiver->dir.qtde_membros + i].offset = pos_offset;
   archiver->dir.membros[archiver->dir.qtde_membros + i].tamanho_comprimido = tamanho_membro;
   archiver->dir.membros[archiver->dir.qtde_membros + i].tamanho = tamanho_membro;
+
+
+//ACHAR O TAMANHO DO DIRETORIO
+fseek(archiver, 0, SEEK_END);
+long tam = ftell(archiver);
