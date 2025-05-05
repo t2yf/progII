@@ -22,7 +22,8 @@ void extrair_info_membro(Archiver *archiver, const char *nome_arq, Membro *membr
     //Puxar os atributos
     strncpy(membro->nome, nome_arq, MAX_NOME);
     membro->nome[MAX_NOME -1] = '\0';
-    membro->UID = info.st_uid;
+    //membro->UID = info.st_uid;
+    membro->UID = info.st_ino;
     membro->tamanho_original = info.st_size;
     membro->tamanho_comprimido = info.st_size;
     membro->data_modificacao = info.st_mtime;
