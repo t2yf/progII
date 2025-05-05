@@ -99,6 +99,7 @@ int main(int argc, char *argv[]){
 
     //Criar ou pegar archiver
     Archiver *archiver = verifica_existe_archiver(arq);
+   // exit (0);
 
     //Contar quantidade de membros
     int num_membros = contar_membros(membros);
