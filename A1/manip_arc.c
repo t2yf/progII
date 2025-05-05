@@ -54,3 +54,13 @@ void mover_membros(FILE *arq, unsigned long inicio, unsigned long final, unsigne
     free(buffer);
 
 }
+
+unsigned char *aloca_buffer_dinamico(size_t tamanho){
+    unsigned char *buffer = malloc(sizeof(unsigned char) * tamanho);
+
+    if (!buffer) {
+        perror("Erro ao alocar buffer");
+        return NULL;
+    }
+    return buffer;
+}

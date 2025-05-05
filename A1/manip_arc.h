@@ -14,6 +14,9 @@ int contar_membros(char **membros);
 //movimentar membros
 void mover_membros(FILE *arq, unsigned long inicio, unsigned long final, unsigned long referencia);
 
+//Alocar buffer dinâmico
+unsigned char *aloca_buffer_dinamico(size_t tamanho);
+
 //verificar se membro já existe no archive
 
 //verificar quantos membros serão inseridos
