@@ -125,7 +125,7 @@ void inserir_membros(Archiver *archiver, char **membros, int num_arq){
     //Abrir arquivo binário
     // fprintf(stderr, archiver->nome);
     FILE *arq = fopen(archiver->nome, "r+b");
-    if(!arq){   
+    if(!arq){
         perror("Erro ao abrir o arquivo\n");
         return;
     }
