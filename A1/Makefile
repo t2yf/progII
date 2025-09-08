@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -g
-
+#using c23
 all: gbv
 
 gbv: main.o gbv.o util.o
