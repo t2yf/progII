@@ -6,5 +6,7 @@
 // Converte time_t para string formatada
 void format_date(time_t t, char *buffer, int max);
 
+
+
 #endif
 
