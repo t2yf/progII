@@ -10,25 +10,26 @@
     // TODO move tras
 
 // TODO cuidar do tamanho máximo do buffer
-void move_docs(FILE *docs, unsigned long int start, unsigned long int end, unsigned long int reference) {
-    /*Colocar docs no buffer*/
-    size_t size_docs = end - start;
-    char *buffer = malloc(size_docs);
+void move_file(FILE *file, unsigned long int start, unsigned long int end, unsigned long int reference) {
+    /*Colocar file no buffer*/
+    size_t size_file = end - start;
+    char *buffer = malloc(size_file);
 
     if (!buffer) {
-        perror("Erro ao alocar o buffer no move_docs\n");
+        perror("Erro ao alocar o buffer no move_file\n");
         return;
     }
 
-    fseek(docs, start, SEEK_SET);
-    fread(buffer, 1, size_docs, docs);
+    fseek(file, start, SEEK_SET);
+    fread(buffer, 1, size_file, file);
 
     /*Procurar referencia e escrever*/
-    fseek(docs, reference, SEEK_SET);
-    fwrite(buffer, 1, size_docs, docs);
+    fseek(file, reference, SEEK_SET);
+    fwrite(buffer, 1, size_file, file);
 
     free(buffer);
 }
+//TODO talvez precise de um move_docs_back e um move_docs_forward, a depender de como funcionará o remover
 
 // TODO cuidar do tamanho máximo do buffer
 void read_write(FILE *read_file, FILE *write_file, unsigned long int start_read, unsigned long int end_read, unsigned long int start_write) {
@@ -122,7 +123,7 @@ int gbv_open(Library *lib, const char *filename) {
 
     /*Ler quantidade de docs*/
     fread(&lib->count, sizeof(int), 1, gbv);
-    
+
     /*Ler vetor de docs*/
     unsigned long int offset_lib;
     fread(&offset_lib, sizeof(unsigned long int), 1, gbv);
@@ -179,12 +180,11 @@ int extract_data_docs(const char *docname, Document *docs) {
 // TODO !!!!! offset é unsigned long int e qtde de arquivos unsigned int
 // TODO se docs é muito grande !!!
 // TODO se docs repetido, substituir !!!!
-
+// TODO fazer usando buffer estático
 
 int gbv_add(Library *lib, const char *archive, const char *docname) {
     long offset_docs;
     long offset_lib;
-
 
     FILE *gbv = fopen(archive, "r+b");
     int empty = gbv_empty(gbv);
@@ -210,8 +210,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     if (lib->count == 0) {
         lib->docs = malloc(sizeof(Document));
     } else {
-        //TODO testar
-        lib->docs = realloc(lib->docs, sizeof(Document) * lib->count);
+        //TODO testar, consertar lib->count +1
+        lib->docs = realloc(lib->docs, sizeof(Document) * (lib->count + 1));
     }
 
     //TODO! [AVISO] Se for o primeiro elemento ele vai estar na posição 0 do vetor
@@ -250,9 +250,38 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 
         fclose(gbv);
         fclose(docs);
+        return 0;
     }
-    //TODO fazer caso de quando não está vazio
-        //TODO fazer mover para trás, função
+
+    /*Caso 2: .gbv não vazio*/
+    //TODO perguntar se eu empurro o diretório ou só reescrevo
+
+    //Pegar offset do diretório e atualizar
+    unsigned long int offset_lib_original;
+    fread(&offset_lib_original, sizeof(unsigned long int), 1, gbv);
+
+    //Atualizar offset do diretório original
+    offset_lib = offset_lib_original + size_new_docs;
+
+    //Escrever info do offset do diretório
+    rewind(gbv);
+    fseek(gbv, offset_lib_area, SEEK_SET);
+    fwrite(&offset_lib, sizeof(unsigned long int), 1, gbv);
+
+    //Atualizar offset do documento
+    offset_docs = offset_lib_original;
+    fprintf(stderr, "aqui\n\n");
+    lib->docs[lib->count -1].offset = offset_docs;
+
+    //Escrever documento
+    read_write(docs, gbv, 0, size_new_docs, offset_docs);
+
+    //Escrever diretório
+    fseek(gbv, offset_lib, SEEK_SET);
+    fwrite(lib->docs, sizeof(Document), lib->count, gbv);
+
+    fclose(gbv);
+    fclose(docs);
 
     return 0;
 }
