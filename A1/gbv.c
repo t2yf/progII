@@ -8,6 +8,9 @@
 //TODO funções aux
     // TODO move frente
     // TODO move tras
+    // TODO escrever diretório
+
+
 
 // TODO cuidar do tamanho máximo do buffer
 void move_file(FILE *file, unsigned long int start, unsigned long int end, unsigned long int reference) {
@@ -29,7 +32,17 @@ void move_file(FILE *file, unsigned long int start, unsigned long int end, unsig
 
     free(buffer);
 }
+
 //TODO talvez precise de um move_docs_back e um move_docs_forward, a depender de como funcionará o remover
+//Puxar os docs para trás, mesmo que sobreponha o diretório
+void move_docs_back(FILE *gbv, Library *lib, unsigned long int start, unsigned long int reference) {
+
+}
+
+void move_docs_forward() {
+
+}
+
 
 // TODO cuidar do tamanho máximo do buffer
 void read_write(FILE *read_file, FILE *write_file, unsigned long int start_read, unsigned long int end_read, unsigned long int start_write) {
@@ -174,6 +187,40 @@ int extract_data_docs(const char *docname, Document *docs) {
     return 0;
 }
 
+int docs_name_cmp(Library *lib, const char *docname) {
+    for (int i = 0; i < lib->count; i++) {
+        if (strcmp(lib->docs[i].name, docname) == 0) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+//Substituir docs no .gbv
+int replace_docs(FILE *gbv, FILE *docs, Library *lib, int repeated_docs) {
+    long offset_repeated_docs = lib->docs[repeated_docs].offset;
+
+    /*Caso 2.1.1: Docs continua com mesmo tamanho*/
+    if (lib->docs[repeated_docs].size == size_new_docs) {
+        //TODO Substituir
+        //TODO atualizar o diretório
+    }
+    /*Caso 2.1.2: Docs aumentou*/
+    else if (lib->docs[repeated_docs].size > size_new_docs) {
+
+    }
+    /*Caso 2.1.3: Docs diminuiu*/
+    else {
+
+    }
+
+    //TODO Empurrar
+    //TODO casos do empurrar, se for o último elemento
+    //TODO atualizar offset de todos os docs subsequentes e o repetido
+    //TODO atualizar o diretório
+}
+
 //ir colocando de um em um arquivo, pelo que está na main > for
 //achar offset onde colocar, empurrar o diretório e escrever
 // TODO testar com todo o tipo de arquivo, imagens e tals
@@ -254,7 +301,22 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     }
 
     /*Caso 2: .gbv não vazio*/
-    //TODO perguntar se eu empurro o diretório ou só reescrevo
+    //TODO [DÚVIDA] perguntar se eu empurro o diretório ou só reescrevo
+
+    /*Caso 2.1: Arquivo é repetido*/
+
+    //Procurar docs repetido
+    int repeated_docs = docs_name_cmp(lib, docname);
+
+    //Se for repetido
+    if (repeated_docs != -1) {
+        //TODO substituir
+        repeated_docs(gbv, docs, lib , repeated_docs);
+
+        return 0;
+    }
+
+    /*Caso 2.2: Docs não é repetido*/
 
     //Pegar offset do diretório e atualizar
     unsigned long int offset_lib_original;
@@ -270,7 +332,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 
     //Atualizar offset do documento
     offset_docs = offset_lib_original;
-    fprintf(stderr, "aqui\n\n");
     lib->docs[lib->count -1].offset = offset_docs;
 
     //Escrever documento
@@ -289,7 +350,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 //??
 int gbv_remove(Library *lib, const char *docname){}
 
-// TODO fazer antes do inserir mais para ver se está certinho
 int gbv_list(const Library *lib) {
     // TODO pensar em casos de erro
     char buffer[20];
@@ -300,10 +360,8 @@ int gbv_list(const Library *lib) {
         format_date(lib->docs[i].date, buffer, sizeof(buffer));
         printf("Data: %s\n", buffer);
         printf("Offset: %lu\n\n\n", lib->docs[i].offset);
-
     }
-
-
+    return 0;
 }
 int gbv_view(const Library *lib, const char *docname) {
     /// TODO fazer função auxiliar para ler os docs do .gbv e printar no terminal em hex tipo hexdump
