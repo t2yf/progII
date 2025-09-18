@@ -2,6 +2,8 @@
 #include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <math.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -34,21 +36,24 @@ void move_file(FILE *file, unsigned long int start, unsigned long int end, unsig
 }
 
 //TODO talvez precise de um move_docs_back e um move_docs_forward, a depender de como funcionará o remover
-//Puxar os docs para trás, mesmo que sobreponha o diretório
+//Puxar os docs para trás, mesmo que sobreponha o diretório, usar no substituir
 void move_docs_back(FILE *gbv, Library *lib, unsigned long int start, unsigned long int reference) {
 
 }
-
+//usar no remover, usar no subsituir
 void move_docs_forward() {
 
 }
 
 
 // TODO cuidar do tamanho máximo do buffer
-void read_write(FILE *read_file, FILE *write_file, unsigned long int start_read, unsigned long int end_read, unsigned long int start_write) {
+void read_write(FILE *read_file, FILE *write_file, unsigned long int start_read, unsigned long int size_content, unsigned long int start_write) {
     /*Colocar dados no buffer*/
-    size_t size_content = end_read - start_read;
-    char *buffer = malloc(size_content);
+    //size_t size_content = end_read - start_read;
+    //char *buffer = malloc(size_content);
+    //TODO verificar se está certo
+
+    char *buffer = malloc(BUFFER_SIZE);
 
     if (!buffer) {
         perror("Erro ao alocar buffer no read_write\n");
@@ -59,12 +64,16 @@ void read_write(FILE *read_file, FILE *write_file, unsigned long int start_read,
     fseek(read_file, start_read, SEEK_SET);
     fread(buffer, size_content, 1, read_file);
 
+    //fwrite(buffer, size_content, 1, stdout);
+
     /*Escrever conteúdo no arquivo de escrita*/
     fseek(write_file, start_write, SEEK_SET);
     fwrite(buffer, size_content, 1, write_file);
 
     free(buffer);
 }
+
+
 
 //Verifica se o filername tem pelo menos 5 caracteres e se termina com .gbv
 int gbv_ext_verify(const char *filername) {
@@ -141,7 +150,6 @@ int gbv_open(Library *lib, const char *filename) {
     unsigned long int offset_lib;
     fread(&offset_lib, sizeof(unsigned long int), 1, gbv);
 
-    ///TODO testar com mais de um inserido
     fseek(gbv, offset_lib, SEEK_SET);
 
     lib->docs = calloc(lib->count, sizeof(Document));
@@ -151,13 +159,11 @@ int gbv_open(Library *lib, const char *filename) {
     }
     fread(lib->docs, sizeof(Document), lib->count, gbv);
 
-    //gbv_list(lib);
-
     fclose(gbv);
     return 0;
 }
 
-
+//
 int extract_data_docs(const char *docname, Document *docs) {
     struct stat info;
 
@@ -169,6 +175,7 @@ int extract_data_docs(const char *docname, Document *docs) {
 
     /*Verificar se nome cabe no max*/
     // TODO teste
+    // TODO se o nome for maior, cortar, não permitir
     unsigned long int tam_nome = strlen(docname);
     if (tam_nome > MAX_NAME -1) {
         perror("Nome do docs muito longo\n");
@@ -180,7 +187,7 @@ int extract_data_docs(const char *docname, Document *docs) {
     docs->name[MAX_NAME - 1] = 0;
 
     docs->size = info.st_size;
-    docs->date = info.st_mtime;
+    docs->date = time(NULL);
     //Info a ser alterada posteriormente no gbv_add
     docs->offset = 0;
 
@@ -198,28 +205,28 @@ int docs_name_cmp(Library *lib, const char *docname) {
 }
 
 //Substituir docs no .gbv
-int replace_docs(FILE *gbv, FILE *docs, Library *lib, int repeated_docs) {
-    long offset_repeated_docs = lib->docs[repeated_docs].offset;
-
-    /*Caso 2.1.1: Docs continua com mesmo tamanho*/
-    if (lib->docs[repeated_docs].size == size_new_docs) {
-        //TODO Substituir
-        //TODO atualizar o diretório
-    }
-    /*Caso 2.1.2: Docs aumentou*/
-    else if (lib->docs[repeated_docs].size > size_new_docs) {
-
-    }
-    /*Caso 2.1.3: Docs diminuiu*/
-    else {
-
-    }
-
-    //TODO Empurrar
-    //TODO casos do empurrar, se for o último elemento
-    //TODO atualizar offset de todos os docs subsequentes e o repetido
-    //TODO atualizar o diretório
-}
+// int replace_docs(FILE *gbv, FILE *docs, Library *lib, int repeated_docs) {
+//     long offset_repeated_docs = lib->docs[repeated_docs].offset;
+//
+//     /*Caso 2.1.1: Docs continua com mesmo tamanho*/
+//     if (lib->docs[repeated_docs].size == size_new_docs) {
+//         //TODO Substituir
+//         //TODO atualizar o diretório
+//     }
+//     /*Caso 2.1.2: Docs aumentou*/
+//     else if (lib->docs[repeated_docs].size > size_new_docs) {
+//
+//     }
+//     /*Caso 2.1.3: Docs diminuiu*/
+//     else {
+//
+//     }
+//
+//     //TODO Empurrar
+//     //TODO casos do empurrar, se for o último elemento
+//     //TODO atualizar offset de todos os docs subsequentes e o repetido
+//     //TODO atualizar o diretório
+// }
 
 //ir colocando de um em um arquivo, pelo que está na main > for
 //achar offset onde colocar, empurrar o diretório e escrever
@@ -263,7 +270,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 
     //TODO! [AVISO] Se for o primeiro elemento ele vai estar na posição 0 do vetor
     lib->docs[lib->count] = docs_info;
-    unsigned long int size_new_docs = lib->docs[lib->count].size;
+    long size_new_docs = lib->docs[lib->count].size;
 
     /*Atualizar o lib*/
     lib->count++;
@@ -285,11 +292,49 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
         fseek(gbv, offset_lib_area, SEEK_SET);
         fwrite(&offset_lib, sizeof(unsigned long int), 1, gbv);
 
-        //Escrever docs
-        read_write(docs, gbv, 0, size_new_docs, offset_docs);
-
         /*Atualizar offset do documento*/
         lib->docs[lib->count -1].offset = offset_docs;
+
+        //Escrever docs
+
+        //Saber se o arquivo é muito grande
+        if (size_new_docs > BUFFER_SIZE) {
+            rewind(docs);
+            long docs_marker = 0;
+            long remaining = 0;
+            long chunk = 0;
+
+            //Cada docs grande pode ser dividido em chunk_amount blocos, se for um valor quebrado, soma mais um bloco
+            int chunk_amount;
+            if (size_new_docs % BUFFER_SIZE != 0) {
+                chunk_amount = (int)(size_new_docs / BUFFER_SIZE) +1;
+            } else {
+                chunk_amount = (int)(size_new_docs / BUFFER_SIZE);
+            }
+
+
+            for (int i = 0; i < chunk_amount; i++) {
+                //Colocar o "ponteiro" no lugar a ser lido do docs
+                fseek(docs, docs_marker, SEEK_SET);
+
+                //Quanto falta ler e escrever do documento
+                remaining = size_new_docs - docs_marker;
+
+                if (remaining < BUFFER_SIZE)
+                    chunk = remaining;
+                else
+                    chunk = BUFFER_SIZE;
+                read_write(docs, gbv, docs_marker, chunk, offset_docs);
+
+                 docs_marker += chunk;
+                 offset_docs += chunk;
+            }
+        } else{
+            //Docs pequeno
+            read_write(docs, gbv, 0, size_new_docs, offset_docs);
+        }
+
+
 
         //Escrever diretório
         fseek(gbv, offset_lib, SEEK_SET);
@@ -306,15 +351,15 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     /*Caso 2.1: Arquivo é repetido*/
 
     //Procurar docs repetido
-    int repeated_docs = docs_name_cmp(lib, docname);
-
-    //Se for repetido
-    if (repeated_docs != -1) {
-        //TODO substituir
-        repeated_docs(gbv, docs, lib , repeated_docs);
-
-        return 0;
-    }
+    // int repeated_docs = docs_name_cmp(lib, docname);
+    //
+    // //Se for repetido
+    // if (repeated_docs != -1) {
+    //     //TODO substituir
+    //     repeated_docs(gbv, docs, lib , repeated_docs);
+    //
+    //     return 0;
+    // }
 
     /*Caso 2.2: Docs não é repetido*/
 
@@ -335,7 +380,43 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     lib->docs[lib->count -1].offset = offset_docs;
 
     //Escrever documento
-    read_write(docs, gbv, 0, size_new_docs, offset_docs);
+
+    //Saber se o arquivo é muito grande
+    if (size_new_docs > BUFFER_SIZE) {
+        rewind(docs);
+        long docs_marker = 0;
+        long remaining = 0;
+        long chunk = 0;
+
+        //Cada docs grande pode ser dividido em chunk_amount blocos, se for um valor quebrado, soma mais um bloco
+        int chunk_amount;
+        if (size_new_docs % BUFFER_SIZE != 0) {
+            chunk_amount = (int)(size_new_docs / BUFFER_SIZE) +1;
+        } else {
+            chunk_amount = (int)(size_new_docs / BUFFER_SIZE);
+        }
+
+
+        for (int i = 0; i < chunk_amount; i++) {
+            //Colocar o "ponteiro" no lugar a ser lido do docs
+            fseek(docs, docs_marker, SEEK_SET);
+
+            //Quanto falta ler e escrever do documento
+            remaining = size_new_docs - docs_marker;
+
+            if (remaining < BUFFER_SIZE)
+                chunk = remaining;
+            else
+                chunk = BUFFER_SIZE;
+            read_write(docs, gbv, docs_marker, chunk, offset_docs);
+
+            docs_marker += chunk;
+            offset_docs += chunk;
+        }
+    } else{
+        //Docs pequeno
+        read_write(docs, gbv, 0, size_new_docs, offset_docs);
+    }
 
     //Escrever diretório
     fseek(gbv, offset_lib, SEEK_SET);
@@ -347,7 +428,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     return 0;
 }
 
-//??
+//Remover do diretório, do .gbv, arrastar os arquivos para frente, atualizar offsets do diretório
 int gbv_remove(Library *lib, const char *docname){}
 
 int gbv_list(const Library *lib) {
@@ -355,14 +436,18 @@ int gbv_list(const Library *lib) {
     char buffer[20];
 
     for (int i = 0; i < lib->count; i++) {
+        printf("##########################\n");
         printf("Nome: %s\n", lib->docs[i].name);
         printf("Tamanho: %lu\n", lib->docs[i].size);
         format_date(lib->docs[i].date, buffer, sizeof(buffer));
         printf("Data: %s\n", buffer);
-        printf("Offset: %lu\n\n\n", lib->docs[i].offset);
+        printf("Offset: %lu\n", lib->docs[i].offset);
+        printf("##########################\n\n");
     }
     return 0;
 }
+
+// TODO usar sprinf com %xd para imprimir em hexadecimal 
 int gbv_view(const Library *lib, const char *docname) {
     /// TODO fazer função auxiliar para ler os docs do .gbv e printar no terminal em hex tipo hexdump
     /// //https://stackoverflow.com/questions/19802940/trying-to-use-fwrite-to-write-a-string-in-binary-hex-in-c
@@ -375,5 +460,4 @@ int gbv_view(const Library *lib, const char *docname) {
 
 }
 
-// TODO fazer funções auxiliares de ordenação para cada critério
-int gbv_order(Library *lib, const char *archive, const char *criteria){}
+
