@@ -6,6 +6,11 @@
 #include <string.h>
 #include <sys/stat.h>
 
+//TODO
+    // TODO fazer função escrever diretório
+    // TODO testar para bloco maior move tras
+    // TODO fazer substituir
+
 //TODO funções aux
     // TODO move frente
     // TODO move tras
@@ -42,7 +47,7 @@ void move_file(FILE *file, unsigned long int start, unsigned long int size_conte
         perror("Erro ao alocar o buffer no move_file\n");
         return;
     }
-    rewind(file);
+
     fseek(file, start, SEEK_SET);
     fread(buffer, 1, size_content, file);
 
@@ -71,7 +76,7 @@ void move_docs_back(FILE *gbv, Library *lib, int idx_first, int idx_last, long s
     long chunk_to_move = offset_last - offset_first;
 
     //Para onde mover
-    long where_to_move = offset_last + size_to_move;
+    long where_to_move = offset_first + size_to_move;
 
     //Puxar a partir do último docs
 
@@ -93,7 +98,7 @@ void move_docs_back(FILE *gbv, Library *lib, int idx_first, int idx_last, long s
 
         for (int i = 0; i < mini_chunk_amount; i++) {
             aux_pointer = aux_last - BUFFER_SIZE;
-            aux_where_to_move = aux_last + size_to_move;
+            aux_where_to_move = aux_pointer + size_to_move;
 
             if (aux_pointer >= offset_first) {
                 mini_chunk_size = BUFFER_SIZE;
