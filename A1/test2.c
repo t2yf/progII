@@ -23,6 +23,8 @@ int main(int argc, char *argv[]) {
         }
     } else if (strcmp(opcao, "-l") == 0) {
         gbv_list(&lib);
+    } else if (strcmp(opcao, "-m") == 0) {
+        aux(biblioteca, &lib);
     }
 
 

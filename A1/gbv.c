@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <math.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -15,30 +14,136 @@
 
 
 // TODO cuidar do tamanho máximo do buffer
-void move_file(FILE *file, unsigned long int start, unsigned long int end, unsigned long int reference) {
+// void move_file(FILE *file, unsigned long int start, unsigned long int end, unsigned long int reference) {
+//     /*Colocar file no buffer*/
+//     size_t size_file = end - start;
+//     char *buffer = malloc(size_file);
+//
+//     if (!buffer) {
+//         perror("Erro ao alocar o buffer no move_file\n");
+//         return;
+//     }
+//
+//     fseek(file, start, SEEK_SET);
+//     fread(buffer, 1, size_file, file);
+//
+//     /*Procurar referencia e escrever*/
+//     fseek(file, reference, SEEK_SET);
+//     fwrite(buffer, 1, size_file, file);
+//
+//     free(buffer);
+// }
+
+void move_file(FILE *file, unsigned long int start, unsigned long int size_content, unsigned long int reference) {
     /*Colocar file no buffer*/
-    size_t size_file = end - start;
-    char *buffer = malloc(size_file);
+    char *buffer = malloc(size_content);
 
     if (!buffer) {
         perror("Erro ao alocar o buffer no move_file\n");
         return;
     }
-
+    rewind(file);
     fseek(file, start, SEEK_SET);
-    fread(buffer, 1, size_file, file);
+    fread(buffer, 1, size_content, file);
+
 
     /*Procurar referencia e escrever*/
     fseek(file, reference, SEEK_SET);
-    fwrite(buffer, 1, size_file, file);
+    fwrite(buffer, 1, size_content, file);
 
     free(buffer);
 }
 
+
 //TODO talvez precise de um move_docs_back e um move_docs_forward, a depender de como funcionará o remover
 //Puxar os docs para trás, mesmo que sobreponha o diretório, usar no substituir
-void move_docs_back(FILE *gbv, Library *lib, unsigned long int start, unsigned long int reference) {
+// TODO testar para puxar 1 só, o último, e vários
+//TODO testar para size_to_move grande > BUFFER SIZE e pequeno
+void move_docs_back(FILE *gbv, Library *lib, int idx_first, int idx_last, long size_to_move) {
+    //Localizar o primeiro docs
+    long offset_first = lib->docs[idx_first].offset;
 
+    //Localizar o último docs
+    //TODO [AVISO] nomalmente idx_last será lib->count -1 (último), fiz assim para deixar mais genérico
+    long offset_last = lib->docs[idx_last].offset + lib->docs[idx_last].size;
+
+    //Qual "blocão" eu devo puxar
+    long chunk_to_move = offset_last - offset_first;
+
+    //Para onde mover
+    long where_to_move = offset_last + size_to_move;
+
+    //Puxar a partir do último docs
+
+    //Se o bloco é muito grande, cortar em partes
+    if (chunk_to_move > BUFFER_SIZE) {
+        long aux_pointer = 0;
+        long aux_last = offset_last;
+        long aux_where_to_move = 0;
+
+        //O blocão pode ser dividido em blocos menores
+        int mini_chunk_amount;
+        if (chunk_to_move % BUFFER_SIZE != 0) {
+            mini_chunk_amount = (int)(chunk_to_move / BUFFER_SIZE) + 1;
+        } else {
+            mini_chunk_amount = (int)(chunk_to_move / BUFFER_SIZE);
+        }
+
+        long mini_chunk_size = 0;
+
+        for (int i = 0; i < mini_chunk_amount; i++) {
+            aux_pointer = aux_last - BUFFER_SIZE;
+            aux_where_to_move = aux_last + size_to_move;
+
+            if (aux_pointer >= offset_first) {
+                mini_chunk_size = BUFFER_SIZE;
+            } else {
+                mini_chunk_size = aux_last - offset_first;
+                aux_pointer = offset_first;
+            }
+            move_file(gbv, aux_pointer, mini_chunk_size, aux_where_to_move);
+            aux_last = aux_pointer;
+        }
+
+    } else {
+        //Puxar bloco inteiro
+        move_file(gbv, offset_first, chunk_to_move, where_to_move);
+        fprintf(stderr, "where to move: %ld\n", where_to_move);
+        fprintf(stderr, "offset first: %ld\n", offset_first);
+        fprintf(stderr, "offset last: %ld\n", offset_last);
+        fprintf(stderr, "chunk: %ld\n", chunk_to_move);
+    }
+
+    //Atualizar offsets
+    for (int i = idx_first; i <= idx_last; i++) {
+        lib->docs[i].offset += size_to_move;
+    }
+
+    //Atualizar offset dir
+    //TODO pegar valor antes e depois apagar
+    unsigned long int antes;
+
+    rewind(gbv);
+    fseek(gbv, sizeof(int), SEEK_SET);
+    fread(&antes, sizeof(unsigned long int), 1, gbv);
+    antes += size_to_move;
+    fprintf(stderr,"antes: %ld\n", antes);
+    fprintf(stderr,"depois: %ld\n", antes + size_to_move);
+
+    rewind(gbv);
+    fseek(gbv, sizeof(int), SEEK_SET);
+    fwrite(&antes, sizeof(unsigned long int), 1, gbv);
+
+    //TODO reescrever diretório só para teste
+    rewind(gbv);
+    fseek(gbv, antes, SEEK_SET);
+    fwrite(lib->docs, sizeof(Document), lib->count, gbv);
+
+}
+
+void aux(const char *arq, Library *lib) {
+    FILE *gbv = fopen(arq, "r+b");
+    move_docs_back(gbv, lib, 1, 1, 100);
 }
 //usar no remover, usar no subsituir
 void move_docs_forward() {
@@ -46,13 +151,7 @@ void move_docs_forward() {
 }
 
 
-// TODO cuidar do tamanho máximo do buffer
 void read_write(FILE *read_file, FILE *write_file, unsigned long int start_read, unsigned long int size_content, unsigned long int start_write) {
-    /*Colocar dados no buffer*/
-    //size_t size_content = end_read - start_read;
-    //char *buffer = malloc(size_content);
-    //TODO verificar se está certo
-
     char *buffer = malloc(BUFFER_SIZE);
 
     if (!buffer) {
@@ -73,8 +172,6 @@ void read_write(FILE *read_file, FILE *write_file, unsigned long int start_read,
     free(buffer);
 }
 
-
-
 //Verifica se o filername tem pelo menos 5 caracteres e se termina com .gbv
 int gbv_ext_verify(const char *filername) {
     size_t size_name = strlen(filername);
@@ -88,7 +185,6 @@ int gbv_empty(FILE *gbv) {
     unsigned long size = ftell(gbv);
     return size == 0;
 }
-
 
 //Criar um .gbv
 int gbv_create(const char *filename) {
@@ -163,7 +259,7 @@ int gbv_open(Library *lib, const char *filename) {
     return 0;
 }
 
-//
+
 int extract_data_docs(const char *docname, Document *docs) {
     struct stat info;
 
@@ -228,11 +324,8 @@ int docs_name_cmp(Library *lib, const char *docname) {
 //     //TODO atualizar o diretório
 // }
 
-//ir colocando de um em um arquivo, pelo que está na main > for
-//achar offset onde colocar, empurrar o diretório e escrever
-// TODO testar com todo o tipo de arquivo, imagens e tals
+
 // TODO !!!!! offset é unsigned long int e qtde de arquivos unsigned int
-// TODO se docs é muito grande !!!
 // TODO se docs repetido, substituir !!!!
 // TODO fazer usando buffer estático
 
@@ -264,7 +357,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     if (lib->count == 0) {
         lib->docs = malloc(sizeof(Document));
     } else {
-        //TODO testar, consertar lib->count +1
         lib->docs = realloc(lib->docs, sizeof(Document) * (lib->count + 1));
     }
 
@@ -333,8 +425,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
             //Docs pequeno
             read_write(docs, gbv, 0, size_new_docs, offset_docs);
         }
-
-
 
         //Escrever diretório
         fseek(gbv, offset_lib, SEEK_SET);
