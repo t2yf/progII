@@ -7,14 +7,25 @@
 #include <sys/stat.h>
 
 //TODO
-    // TODO fazer função escrever diretório
-    // TODO testar para bloco maior move tras
     // TODO fazer substituir
+    // TODO adaptar o move tras para escrever o lib apenas no replace msm
 
 //TODO funções aux
     // TODO move frente
-    // TODO move tras
-    // TODO escrever diretório
+
+void lib_offset_write(FILE *gbv, Library *lib, unsigned long int offset_lib) {
+    //Escrever no .gbv o offset do diretório
+    rewind(gbv);
+    fseek(gbv, sizeof(int), SEEK_SET);
+    fwrite(&offset_lib, sizeof(unsigned long int), 1, gbv);
+}
+
+void lib_write(FILE *gbv, Library *lib, unsigned long int offset_lib) {
+    //No diretório tem apenas as info de cada doc
+    rewind(gbv);
+    fseek(gbv, offset_lib, SEEK_SET);
+    fwrite(lib->docs, sizeof(Document), lib->count, gbv);
+}
 
 
 void move_file(FILE *file, unsigned long int start, unsigned long int size_content, unsigned long int reference) {
@@ -264,8 +275,8 @@ int extract_data_docs(const char *docname, Document *docs) {
     }
 
     /*Atribuir os atributos*/
-    //TODO TODO
-    memset(docs->name, ' ', MAX_NAME);
+    //Inicializar vetor do nome com espaços
+    memset(docs->name, 0, MAX_NAME);
 
     strncpy(docs->name, docname, tam_nome +1);
     docs->name[MAX_NAME - 1] = 0;
@@ -343,8 +354,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 
     /*Extrair dados do documento*/
     Document docs_info;
-    //TODO
-    //Incializar docs_info com zero antes de  colocar algo na struct
     //memset(&docs_info, 0, sizeof(docs_info));
 
     int get_data = extract_data_docs(docname, &docs_info);
@@ -352,8 +361,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
         perror("Erro ao coletar os dados do docs\n");
         return -1;
     }
-
-
 
     //TODO! [AVISO] Se for o primeiro elemento ele vai estar na posição 0 do vetor
     lib->docs[lib->count] = docs_info;
@@ -365,7 +372,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     /*Escrever count no .gbv*/
     rewind(gbv);
     fwrite(&lib->count, sizeof(int), 1, gbv);
-    unsigned int offset_lib_area = sizeof(int);
+    //unsigned int offset_lib_area = sizeof(int);
 
     /*Caso 1: .gbv está inicialmente vazio*/
     if (empty) {
@@ -376,8 +383,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
         offset_docs = sizeof(int) + sizeof(unsigned long int);
 
         //Escrever info do offset do diretório
-        fseek(gbv, offset_lib_area, SEEK_SET);
-        fwrite(&offset_lib, sizeof(unsigned long int), 1, gbv);
+        lib_offset_write(gbv, lib, offset_lib);
+
 
         /*Atualizar offset do documento*/
         lib->docs[lib->count -1].offset = offset_docs;
@@ -422,8 +429,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
         }
 
         //Escrever diretório
-        fseek(gbv, offset_lib, SEEK_SET);
-        fwrite(lib->docs, sizeof(Document), lib->count, gbv);
+        lib_write(gbv, lib, offset_lib);
+
 
         //TODO Liberar lib
         free(lib->docs);
@@ -460,9 +467,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     offset_lib = offset_lib_original + size_new_docs;
 
     //Escrever info do offset do diretório
-    rewind(gbv);
-    fseek(gbv, offset_lib_area, SEEK_SET);
-    fwrite(&offset_lib, sizeof(unsigned long int), 1, gbv);
+    lib_offset_write(gbv, lib, offset_lib);
+
 
     //Atualizar offset do documento
     offset_docs = offset_lib_original;
@@ -508,8 +514,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     }
 
     //Escrever diretório
-    fseek(gbv, offset_lib, SEEK_SET);
-    fwrite(lib->docs, sizeof(Document), lib->count, gbv);
+    lib_write(gbv, lib, offset_lib);
 
     //TODO Liberar lib
     free(lib->docs);
