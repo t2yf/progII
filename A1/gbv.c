@@ -17,28 +17,6 @@
     // TODO escrever diretório
 
 
-
-// TODO cuidar do tamanho máximo do buffer
-// void move_file(FILE *file, unsigned long int start, unsigned long int end, unsigned long int reference) {
-//     /*Colocar file no buffer*/
-//     size_t size_file = end - start;
-//     char *buffer = malloc(size_file);
-//
-//     if (!buffer) {
-//         perror("Erro ao alocar o buffer no move_file\n");
-//         return;
-//     }
-//
-//     fseek(file, start, SEEK_SET);
-//     fread(buffer, 1, size_file, file);
-//
-//     /*Procurar referencia e escrever*/
-//     fseek(file, reference, SEEK_SET);
-//     fwrite(buffer, 1, size_file, file);
-//
-//     free(buffer);
-// }
-
 void move_file(FILE *file, unsigned long int start, unsigned long int size_content, unsigned long int reference) {
     /*Colocar file no buffer*/
     char *buffer = malloc(size_content);
@@ -148,7 +126,8 @@ void move_docs_back(FILE *gbv, Library *lib, int idx_first, int idx_last, long s
 
 void aux(const char *arq, Library *lib) {
     FILE *gbv = fopen(arq, "r+b");
-    move_docs_back(gbv, lib, 1, 1, 100);
+    move_docs_back(gbv, lib, 0, 1, 100);
+    fclose(gbv);
 }
 //usar no remover, usar no subsituir
 void move_docs_forward() {
@@ -236,6 +215,7 @@ int gbv_open(Library *lib, const char *filename) {
         // TODO [DÚVIDA]>> mais algo ?
         lib->count = 0;
 
+        fclose(gbv);
         return 0;
     }
 
@@ -284,6 +264,9 @@ int extract_data_docs(const char *docname, Document *docs) {
     }
 
     /*Atribuir os atributos*/
+    //TODO TODO
+    //memset(docs->name, ' ', MAX_NAME);
+
     strncpy(docs->name, docname, tam_nome +1);
     docs->name[MAX_NAME - 1] = 0;
 
@@ -351,11 +334,16 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 
     /*Extrair dados do documento*/
     Document docs_info;
+    //TODO
+    //Incializar docs_info com zero antes de  colocar algo na struct
+    memset(&docs_info, 0, sizeof(docs_info));
+
     int get_data = extract_data_docs(docname, &docs_info);
     if (get_data != 0) {
         perror("Erro ao coletar os dados do docs\n");
         return -1;
     }
+
 
     /*Colocar info docs no vetor do lib*/
     // Se for o primeiro elemento, temos que alocar espaço
@@ -435,8 +423,12 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
         fseek(gbv, offset_lib, SEEK_SET);
         fwrite(lib->docs, sizeof(Document), lib->count, gbv);
 
-        fclose(gbv);
+        //TODO Liberar lib
+        free(lib->docs);
+
         fclose(docs);
+        fclose(gbv);
+
         return 0;
     }
 
@@ -517,6 +509,9 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     fseek(gbv, offset_lib, SEEK_SET);
     fwrite(lib->docs, sizeof(Document), lib->count, gbv);
 
+    //TODO Liberar lib
+    free(lib->docs);
+
     fclose(gbv);
     fclose(docs);
 
@@ -524,7 +519,9 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 }
 
 //Remover do diretório, do .gbv, arrastar os arquivos para frente, atualizar offsets do diretório
-int gbv_remove(Library *lib, const char *docname){}
+int gbv_remove(Library *lib, const char *docname) {
+    //TODO liberar lib
+}
 
 int gbv_list(const Library *lib) {
     // TODO pensar em casos de erro
@@ -539,6 +536,9 @@ int gbv_list(const Library *lib) {
         printf("Offset: %lu\n", lib->docs[i].offset);
         printf("##########################\n\n");
     }
+
+    //TODO Liberar lib
+    free(lib->docs);
     return 0;
 }
 
@@ -553,6 +553,8 @@ int gbv_view(const Library *lib, const char *docname) {
     // fread(buffer, strlen(buffer)+1, 1, gbv);
     // fwrite(buffer, strlen(buffer)+1, 1, stdout);
 
+
+    //TODO liberar lib
 }
 
 
