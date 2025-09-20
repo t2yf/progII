@@ -9,9 +9,11 @@
 //TODO
     // TODO fazer substituir
     // TODO adaptar o move tras para escrever o lib apenas no replace msm
+    // TODO testar caso em específico do move_forward
+    // TODO testar os move (forward e back) com valgrind
 
 //TODO funções aux
-    // TODO move frente
+
 
 void lib_offset_write(FILE *gbv, Library *lib, unsigned long int offset_lib) {
     //Escrever no .gbv o offset do diretório
@@ -50,10 +52,17 @@ void move_file(FILE *file, unsigned long int start, unsigned long int size_conte
 
 
 //TODO talvez precise de um move_docs_back e um move_docs_forward, a depender de como funcionará o remover
-//Puxar os docs para trás, mesmo que sobreponha o diretório, usar no substituir
 // TODO testar para puxar 1 só, o último, e vários
 //TODO testar para size_to_move grande > BUFFER SIZE e pequeno
+
+//Mover um bloco do .gbv para trás, o diretório DEVE ser reescrito
 void move_docs_back(FILE *gbv, Library *lib, int idx_first, int idx_last, long size_to_move) {
+    // Tratar caso de erro nos índices
+    if (idx_last < idx_first || idx_first < 0 || idx_last < 0 || idx_first >= lib->count || idx_last >= lib->count) {
+        printf("Erro nos índices em move_docs_back\n");
+        return;
+    }
+
     //Localizar o primeiro docs
     long offset_first = lib->docs[idx_first].offset;
 
@@ -134,14 +143,21 @@ void move_docs_back(FILE *gbv, Library *lib, int idx_first, int idx_last, long s
     fwrite(lib->docs, sizeof(Document), lib->count, gbv);
 
 }
-
+//TODO apenas auxiliar
 void aux(const char *arq, Library *lib) {
     FILE *gbv = fopen(arq, "r+b");
     move_docs_back(gbv, lib, 1, 3, 100);
     fclose(gbv);
 }
 //usar no remover, usar no subsituir
+
+//Mover um bloco do .gbv para frente, o diretório DEVE ser reescrito
 void move_docs_forward(FILE *gbv, Library *lib, int idx_first, int idx_last, long size_to_move) {
+    // Tratar caso de erro nos índices
+    if (idx_last < idx_first || idx_first < 0 || idx_last < 0 || idx_first >= lib->count || idx_last >= lib->count) {
+        printf("Erro nos índices em move_docs_forward\n");
+        return;
+    }
     //Localizar o primeiro docs
     long offset_first = lib->docs[idx_first].offset;
 
@@ -232,7 +248,7 @@ void move_docs_forward(FILE *gbv, Library *lib, int idx_first, int idx_last, lon
     fseek(gbv, antes, SEEK_SET);
     fwrite(lib->docs, sizeof(Document), lib->count, gbv);
 }
-
+//TODO apenas auxiliar
 void aux2(const char *arq, Library *lib) {
     FILE *gbv = fopen(arq, "r+b");
     move_docs_forward(gbv, lib, 1, 3, 20);
