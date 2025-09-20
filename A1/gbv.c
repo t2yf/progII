@@ -265,7 +265,7 @@ int extract_data_docs(const char *docname, Document *docs) {
 
     /*Atribuir os atributos*/
     //TODO TODO
-    //memset(docs->name, ' ', MAX_NAME);
+    memset(docs->name, ' ', MAX_NAME);
 
     strncpy(docs->name, docname, tam_nome +1);
     docs->name[MAX_NAME - 1] = 0;
@@ -332,11 +332,20 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
         return -1;
     }
 
+    /*Colocar info docs no vetor do lib*/
+    // Se for o primeiro elemento, temos que alocar espaço
+    if (lib->count == 0) {
+        lib->docs = malloc(sizeof(Document));
+    } else {
+        lib->docs = realloc(lib->docs, sizeof(Document) * (lib->count + 1));
+    }
+
+
     /*Extrair dados do documento*/
     Document docs_info;
     //TODO
     //Incializar docs_info com zero antes de  colocar algo na struct
-    memset(&docs_info, 0, sizeof(docs_info));
+    //memset(&docs_info, 0, sizeof(docs_info));
 
     int get_data = extract_data_docs(docname, &docs_info);
     if (get_data != 0) {
@@ -345,13 +354,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     }
 
 
-    /*Colocar info docs no vetor do lib*/
-    // Se for o primeiro elemento, temos que alocar espaço
-    if (lib->count == 0) {
-        lib->docs = malloc(sizeof(Document));
-    } else {
-        lib->docs = realloc(lib->docs, sizeof(Document) * (lib->count + 1));
-    }
 
     //TODO! [AVISO] Se for o primeiro elemento ele vai estar na posição 0 do vetor
     lib->docs[lib->count] = docs_info;
