@@ -137,12 +137,106 @@ void move_docs_back(FILE *gbv, Library *lib, int idx_first, int idx_last, long s
 
 void aux(const char *arq, Library *lib) {
     FILE *gbv = fopen(arq, "r+b");
-    move_docs_back(gbv, lib, 0, 1, 100);
+    move_docs_back(gbv, lib, 1, 3, 100);
     fclose(gbv);
 }
 //usar no remover, usar no subsituir
-void move_docs_forward() {
+void move_docs_forward(FILE *gbv, Library *lib, int idx_first, int idx_last, long size_to_move) {
+    //Localizar o primeiro docs
+    long offset_first = lib->docs[idx_first].offset;
 
+    //Localizar o último docs
+    //TODO [AVISO] nomalmente idx_last será lib->count -1 (último), fiz assim para deixar mais genérico
+    long offset_last = lib->docs[idx_last].offset + lib->docs[idx_last].size;
+
+    //Qual "blocão" eu devo puxar
+    long chunk_to_move = offset_last - offset_first;
+
+    //Para onde mover
+    //TODO [AVISO] Lógica contrária ao move_docs_back, aqui está puxando para frente
+    long where_to_move = offset_first - size_to_move;
+
+    //Se invadir espaço onde está a quantidade de docs e offset do diretório (int + long), retornar
+    if (where_to_move <= 12) {
+        printf("Erro no move_docs_forward, where_to_move invadindo espaço indevido\n");
+        return;
+    }
+
+    //Puxar a partir do último docs
+
+    //Se o bloco é muito grande, cortar em partes
+    if (chunk_to_move > BUFFER_SIZE) {
+        long aux_pointer = 0;
+        long aux_last = offset_last;
+        long aux_where_to_move = 0;
+
+        //O blocão pode ser dividido em blocos menores
+        int mini_chunk_amount;
+        if (chunk_to_move % BUFFER_SIZE != 0) {
+            mini_chunk_amount = (int)(chunk_to_move / BUFFER_SIZE) + 1;
+        } else {
+            mini_chunk_amount = (int)(chunk_to_move / BUFFER_SIZE);
+        }
+
+        long mini_chunk_size = 0;
+
+        for (int i = 0; i < mini_chunk_amount; i++) {
+            aux_pointer = aux_last - BUFFER_SIZE;
+            //TODO [AVISO] Lógica contrária ao move_docs_back, aqui está puxando para frente
+            aux_where_to_move = aux_pointer - size_to_move;
+
+            if (aux_pointer >= offset_first) {
+                mini_chunk_size = BUFFER_SIZE;
+            } else {
+                mini_chunk_size = aux_last - offset_first;
+                aux_pointer = offset_first;
+            }
+            move_file(gbv, aux_pointer, mini_chunk_size, aux_where_to_move);
+            aux_last = aux_pointer;
+        }
+
+    } else {
+        //Puxar bloco inteiro
+        move_file(gbv, offset_first, chunk_to_move, where_to_move);
+        fprintf(stderr, "where to move: %ld\n", where_to_move);
+        fprintf(stderr, "offset first: %ld\n", offset_first);
+        fprintf(stderr, "offset last: %ld\n", offset_last);
+        fprintf(stderr, "chunk: %ld\n", chunk_to_move);
+    }
+
+    //Atualizar offsets
+    for (int i = idx_first; i <= idx_last; i++) {
+        //TODO [AVISO] Lógica contrária ao move_docs_back, aqui está puxando para frente
+        lib->docs[i].offset -= size_to_move;
+    }
+
+    //Atualizar offset dir
+    //TODO pegar valor antes e depois apagar
+    unsigned long int antes;
+
+    rewind(gbv);
+    fseek(gbv, sizeof(int), SEEK_SET);
+    fread(&antes, sizeof(unsigned long int), 1, gbv);
+    //TODO [AVISO] Lógica contrária ao move_docs_back, aqui está puxando para frente
+
+    fprintf(stderr,"antes: %ld\n", antes);
+    fprintf(stderr,"depois: %ld\n", antes - size_to_move);
+    antes -= size_to_move;
+
+    rewind(gbv);
+    fseek(gbv, sizeof(int), SEEK_SET);
+    fwrite(&antes, sizeof(unsigned long int), 1, gbv);
+
+    //TODO reescrever diretório só para teste
+    rewind(gbv);
+    fseek(gbv, antes, SEEK_SET);
+    fwrite(lib->docs, sizeof(Document), lib->count, gbv);
+}
+
+void aux2(const char *arq, Library *lib) {
+    FILE *gbv = fopen(arq, "r+b");
+    move_docs_forward(gbv, lib, 1, 3, 20);
+    fclose(gbv);
 }
 
 

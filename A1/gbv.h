@@ -31,5 +31,6 @@ int gbv_view(const Library *lib, const char *docname);
 
 //TODO TODO TODO remover dps
 void aux(const char *arq, Library *lib);
+void aux2(const char *arq, Library *lib);
 #endif
 
