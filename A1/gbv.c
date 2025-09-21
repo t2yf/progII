@@ -10,7 +10,9 @@
     // TODO fazer substituir
     // TODO adaptar o move tras para escrever o lib apenas no replace msm
 
+
 //TODO funções aux
+
 
 
 void lib_offset_write(FILE *gbv, Library *lib, unsigned long int offset_lib) {
@@ -265,7 +267,6 @@ void aux2(const char *arq, Library *lib) {
     fclose(gbv);
 }
 
-
 void read_write(FILE *read_file, FILE *write_file, unsigned long int start_read, unsigned long int size_content, unsigned long int start_write) {
     char *buffer = malloc(BUFFER_SIZE);
 
@@ -286,6 +287,47 @@ void read_write(FILE *read_file, FILE *write_file, unsigned long int start_read,
 
     free(buffer);
 }
+
+//Se arquivo é grande, escreve de pouco a pouco
+void write_docs(FILE *gbv, FILE *docs, long size_new_docs, long offset_docs) {
+    //Saber se o arquivo é muito grande
+    if (size_new_docs > BUFFER_SIZE) {
+        rewind(docs);
+        long docs_marker = 0;
+        long remaining = 0;
+        long chunk = 0;
+
+        //Cada docs grande pode ser dividido em chunk_amount blocos, se for um valor quebrado, soma mais um bloco
+        int chunk_amount;
+        if (size_new_docs % BUFFER_SIZE != 0) {
+            chunk_amount = (int)(size_new_docs / BUFFER_SIZE) +1;
+        } else {
+            chunk_amount = (int)(size_new_docs / BUFFER_SIZE);
+        }
+
+
+        for (int i = 0; i < chunk_amount; i++) {
+            //Colocar o "ponteiro" no lugar a ser lido do docs
+            fseek(docs, docs_marker, SEEK_SET);
+
+            //Quanto falta ler e escrever do documento
+            remaining = size_new_docs - docs_marker;
+
+            if (remaining < BUFFER_SIZE)
+                chunk = remaining;
+            else
+                chunk = BUFFER_SIZE;
+            read_write(docs, gbv, docs_marker, chunk, offset_docs);
+
+            docs_marker += chunk;
+            offset_docs += chunk;
+        }
+    } else{
+        //Docs pequeno
+        read_write(docs, gbv, 0, size_new_docs, offset_docs);
+    }
+}
+
 
 //Verifica se o filername tem pelo menos 5 caracteres e se termina com .gbv
 int gbv_ext_verify(const char *filername) {
@@ -419,17 +461,21 @@ int docs_name_cmp(Library *lib, const char *docname) {
     return -1;
 }
 
+
+
 //Substituir docs no .gbv
-// int replace_docs(FILE *gbv, FILE *docs, Library *lib, int repeated_docs) {
-//     long offset_repeated_docs = lib->docs[repeated_docs].offset;
+// int replace_docs(FILE *gbv, FILE *docs, Library *lib, int repeated_docs, unsigned long size_new_docs) {
+//     long offset_docs = lib->docs[repeated_docs].offset;
+//     long size_old_docs = lib->docs[repeated_docs].size;
 //
 //     /*Caso 2.1.1: Docs continua com mesmo tamanho*/
-//     if (lib->docs[repeated_docs].size == size_new_docs) {
+//     if (size_old_docs == size_new_docs) {
+//
 //         //TODO Substituir
 //         //TODO atualizar o diretório
 //     }
 //     /*Caso 2.1.2: Docs aumentou*/
-//     else if (lib->docs[repeated_docs].size > size_new_docs) {
+//     else if (size_old_docs > size_new_docs) {
 //
 //     }
 //     /*Caso 2.1.3: Docs diminuiu*/
@@ -446,8 +492,6 @@ int docs_name_cmp(Library *lib, const char *docname) {
 
 // TODO !!!!! offset é unsigned long int e qtde de arquivos unsigned int
 // TODO se docs repetido, substituir !!!!
-// TODO fazer usando buffer estático
-
 int gbv_add(Library *lib, const char *archive, const char *docname) {
     long offset_docs;
     long offset_lib;
@@ -512,41 +556,42 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
         //Escrever docs
 
         //Saber se o arquivo é muito grande
-        if (size_new_docs > BUFFER_SIZE) {
-            rewind(docs);
-            long docs_marker = 0;
-            long remaining = 0;
-            long chunk = 0;
-
-            //Cada docs grande pode ser dividido em chunk_amount blocos, se for um valor quebrado, soma mais um bloco
-            int chunk_amount;
-            if (size_new_docs % BUFFER_SIZE != 0) {
-                chunk_amount = (int)(size_new_docs / BUFFER_SIZE) +1;
-            } else {
-                chunk_amount = (int)(size_new_docs / BUFFER_SIZE);
-            }
-
-
-            for (int i = 0; i < chunk_amount; i++) {
-                //Colocar o "ponteiro" no lugar a ser lido do docs
-                fseek(docs, docs_marker, SEEK_SET);
-
-                //Quanto falta ler e escrever do documento
-                remaining = size_new_docs - docs_marker;
-
-                if (remaining < BUFFER_SIZE)
-                    chunk = remaining;
-                else
-                    chunk = BUFFER_SIZE;
-                read_write(docs, gbv, docs_marker, chunk, offset_docs);
-
-                 docs_marker += chunk;
-                 offset_docs += chunk;
-            }
-        } else{
-            //Docs pequeno
-            read_write(docs, gbv, 0, size_new_docs, offset_docs);
-        }
+        write_docs(gbv, docs, size_new_docs, offset_docs);
+        // if (size_new_docs > BUFFER_SIZE) {
+        //     rewind(docs);
+        //     long docs_marker = 0;
+        //     long remaining = 0;
+        //     long chunk = 0;
+        //
+        //     //Cada docs grande pode ser dividido em chunk_amount blocos, se for um valor quebrado, soma mais um bloco
+        //     int chunk_amount;
+        //     if (size_new_docs % BUFFER_SIZE != 0) {
+        //         chunk_amount = (int)(size_new_docs / BUFFER_SIZE) +1;
+        //     } else {
+        //         chunk_amount = (int)(size_new_docs / BUFFER_SIZE);
+        //     }
+        //
+        //
+        //     for (int i = 0; i < chunk_amount; i++) {
+        //         //Colocar o "ponteiro" no lugar a ser lido do docs
+        //         fseek(docs, docs_marker, SEEK_SET);
+        //
+        //         //Quanto falta ler e escrever do documento
+        //         remaining = size_new_docs - docs_marker;
+        //
+        //         if (remaining < BUFFER_SIZE)
+        //             chunk = remaining;
+        //         else
+        //             chunk = BUFFER_SIZE;
+        //         read_write(docs, gbv, docs_marker, chunk, offset_docs);
+        //
+        //          docs_marker += chunk;
+        //          offset_docs += chunk;
+        //     }
+        // } else{
+        //     //Docs pequeno
+        //     read_write(docs, gbv, 0, size_new_docs, offset_docs);
+        // }
 
         //Escrever diretório
         lib_write(gbv, lib, offset_lib);
@@ -567,13 +612,17 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     /*Caso 2.1: Arquivo é repetido*/
 
     //Procurar docs repetido
-    // int repeated_docs = docs_name_cmp(lib, docname);
-    //
-    // //Se for repetido
+    int repeated_docs = docs_name_cmp(lib, docname);
+
+    //Se for repetido
     // if (repeated_docs != -1) {
     //     //TODO substituir
     //     repeated_docs(gbv, docs, lib , repeated_docs);
     //
+    //     //Liberar memória
+    //     free(lib->docs);
+    //     fclose(gbv);
+    //     fclose(docs);
     //     return 0;
     // }
 
@@ -597,41 +646,42 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     //Escrever documento
 
     //Saber se o arquivo é muito grande
-    if (size_new_docs > BUFFER_SIZE) {
-        rewind(docs);
-        long docs_marker = 0;
-        long remaining = 0;
-        long chunk = 0;
-
-        //Cada docs grande pode ser dividido em chunk_amount blocos, se for um valor quebrado, soma mais um bloco
-        int chunk_amount;
-        if (size_new_docs % BUFFER_SIZE != 0) {
-            chunk_amount = (int)(size_new_docs / BUFFER_SIZE) +1;
-        } else {
-            chunk_amount = (int)(size_new_docs / BUFFER_SIZE);
-        }
-
-
-        for (int i = 0; i < chunk_amount; i++) {
-            //Colocar o "ponteiro" no lugar a ser lido do docs
-            fseek(docs, docs_marker, SEEK_SET);
-
-            //Quanto falta ler e escrever do documento
-            remaining = size_new_docs - docs_marker;
-
-            if (remaining < BUFFER_SIZE)
-                chunk = remaining;
-            else
-                chunk = BUFFER_SIZE;
-            read_write(docs, gbv, docs_marker, chunk, offset_docs);
-
-            docs_marker += chunk;
-            offset_docs += chunk;
-        }
-    } else{
-        //Docs pequeno
-        read_write(docs, gbv, 0, size_new_docs, offset_docs);
-    }
+    write_docs(gbv, docs, size_new_docs, offset_docs);
+    // if (size_new_docs > BUFFER_SIZE) {
+    //     rewind(docs);
+    //     long docs_marker = 0;
+    //     long remaining = 0;
+    //     long chunk = 0;
+    //
+    //     //Cada docs grande pode ser dividido em chunk_amount blocos, se for um valor quebrado, soma mais um bloco
+    //     int chunk_amount;
+    //     if (size_new_docs % BUFFER_SIZE != 0) {
+    //         chunk_amount = (int)(size_new_docs / BUFFER_SIZE) +1;
+    //     } else {
+    //         chunk_amount = (int)(size_new_docs / BUFFER_SIZE);
+    //     }
+    //
+    //
+    //     for (int i = 0; i < chunk_amount; i++) {
+    //         //Colocar o "ponteiro" no lugar a ser lido do docs
+    //         fseek(docs, docs_marker, SEEK_SET);
+    //
+    //         //Quanto falta ler e escrever do documento
+    //         remaining = size_new_docs - docs_marker;
+    //
+    //         if (remaining < BUFFER_SIZE)
+    //             chunk = remaining;
+    //         else
+    //             chunk = BUFFER_SIZE;
+    //         read_write(docs, gbv, docs_marker, chunk, offset_docs);
+    //
+    //         docs_marker += chunk;
+    //         offset_docs += chunk;
+    //     }
+    // } else{
+    //     //Docs pequeno
+    //     read_write(docs, gbv, 0, size_new_docs, offset_docs);
+    // }
 
     //Escrever diretório
     lib_write(gbv, lib, offset_lib);
