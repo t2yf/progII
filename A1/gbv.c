@@ -9,8 +9,6 @@
 //TODO
     // TODO fazer substituir
     // TODO adaptar o move tras para escrever o lib apenas no replace msm
-    // TODO testar caso em específico do move_forward
-    // TODO testar os move (forward e back) com valgrind
 
 //TODO funções aux
 
@@ -142,11 +140,14 @@ void move_docs_back(FILE *gbv, Library *lib, int idx_first, int idx_last, long s
     fseek(gbv, antes, SEEK_SET);
     fwrite(lib->docs, sizeof(Document), lib->count, gbv);
 
+    //TODO apenas para teste
+    free(lib->docs);
+
 }
 //TODO apenas auxiliar
 void aux(const char *arq, Library *lib) {
     FILE *gbv = fopen(arq, "r+b");
-    move_docs_back(gbv, lib, 1, 3, 100);
+    move_docs_back(gbv, lib, 1, 1, 100);
     fclose(gbv);
 }
 //usar no remover, usar no subsituir
@@ -251,6 +252,11 @@ void move_docs_forward(FILE *gbv, Library *lib, int idx_first, int idx_last, lon
     rewind(gbv);
     fseek(gbv, antes, SEEK_SET);
     fwrite(lib->docs, sizeof(Document), lib->count, gbv);
+
+
+    //TODO apenas teste
+    free(lib->docs);
+
 }
 //TODO apenas auxiliar
 void aux2(const char *arq, Library *lib) {
