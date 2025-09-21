@@ -181,9 +181,10 @@ void move_docs_forward(FILE *gbv, Library *lib, int idx_first, int idx_last, lon
     //Puxar a partir do último docs
 
     //Se o bloco é muito grande, cortar em partes
+    //TODO TODO arrumar
     if (chunk_to_move > BUFFER_SIZE) {
-        long aux_pointer = 0;
-        long aux_last = offset_last;
+        long aux_first = offset_first;
+        long aux_pointer = aux_first;
         long aux_where_to_move = 0;
 
         //O blocão pode ser dividido em blocos menores
@@ -195,20 +196,23 @@ void move_docs_forward(FILE *gbv, Library *lib, int idx_first, int idx_last, lon
         }
 
         long mini_chunk_size = 0;
-
+        //TODO [AVISO] alterações da lógica
         for (int i = 0; i < mini_chunk_amount; i++) {
-            aux_pointer = aux_last - BUFFER_SIZE;
             //TODO [AVISO] Lógica contrária ao move_docs_back, aqui está puxando para frente
             aux_where_to_move = aux_pointer - size_to_move;
 
-            if (aux_pointer >= offset_first) {
+            if (aux_pointer <= offset_last) {
                 mini_chunk_size = BUFFER_SIZE;
             } else {
-                mini_chunk_size = aux_last - offset_first;
-                aux_pointer = offset_first;
+                aux_pointer -= BUFFER_SIZE;
+                mini_chunk_size = offset_last - aux_pointer;
+                aux_where_to_move = aux_pointer - size_to_move;
+                //aux_pointer = offset_last;
             }
+
             move_file(gbv, aux_pointer, mini_chunk_size, aux_where_to_move);
-            aux_last = aux_pointer;
+            aux_pointer = aux_first + BUFFER_SIZE;
+            aux_first = aux_pointer;
         }
 
     } else {
@@ -251,7 +255,7 @@ void move_docs_forward(FILE *gbv, Library *lib, int idx_first, int idx_last, lon
 //TODO apenas auxiliar
 void aux2(const char *arq, Library *lib) {
     FILE *gbv = fopen(arq, "r+b");
-    move_docs_forward(gbv, lib, 1, 3, 20);
+    move_docs_forward(gbv, lib, 1, 1, 20);
     fclose(gbv);
 }
 
