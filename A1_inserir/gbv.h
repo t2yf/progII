@@ -24,11 +24,13 @@ typedef struct {
 int gbv_create(const char *filename);
 int gbv_open(Library *lib, const char *filename);
 int gbv_add(Library *lib, const char *archive, const char *docname);
-//TODO [AVISO] alterado o remove para receber o .gbv
-int gbv_remove(Library *lib, const char *archive, const char *docname);
+int gbv_remove(Library *lib, const char *docname);
 int gbv_list(const Library *lib);
 int gbv_view(const Library *lib, const char *docname);
 
 
+//TODO TODO TODO remover dps
+void aux(const char *arq, Library *lib);
+void aux2(const char *arq, Library *lib);
 #endif
 
