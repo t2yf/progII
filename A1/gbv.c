@@ -702,6 +702,8 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
     //Liberar memória
     free(lib->docs);
     fclose(gbv);
+
+    return 0;
 }
 
 // TODO pensar em casos de erro
@@ -727,23 +729,61 @@ int gbv_list(const Library *lib) {
     return 0;
 }
 
+
+/// TODO fazer função auxiliar para ler os docs do .gbv e printar no terminal em hex tipo hexdump
+/// //https://stackoverflow.com/questions/19802940/trying-to-use-fwrite-to-write-a-string-in-binary-hex-in-c
+/// https://stackoverflow.com/questions/72717768/how-to-get-a-hex-dump-from-a-binary-file-into-c
+/// https://www.reddit.com/r/learnprogramming/comments/d686g4/read_a_binary_file_and_print_its_values_in_hex_in/
+// unsigned char buffer[8];
+// rewind(gbv);
+// fread(buffer, strlen(buffer)+1, 1, gbv);
+// fwrite(buffer, strlen(buffer)+1, 1, stdout);
 // TODO usar sprinf com %xd para imprimir em hexadecimal
 // TODO não fazer no gbv, fazer no próprio docs direto
 int gbv_view(const Library *lib, const char *docname) {
-    /// TODO fazer função auxiliar para ler os docs do .gbv e printar no terminal em hex tipo hexdump
-    /// //https://stackoverflow.com/questions/19802940/trying-to-use-fwrite-to-write-a-string-in-binary-hex-in-c
-    /// https://stackoverflow.com/questions/72717768/how-to-get-a-hex-dump-from-a-binary-file-into-c
-    /// https://www.reddit.com/r/learnprogramming/comments/d686g4/read_a_binary_file_and_print_its_values_in_hex_in/
-    // unsigned char buffer[8];
-    // rewind(gbv);
-    // fread(buffer, strlen(buffer)+1, 1, gbv);
-    // fwrite(buffer, strlen(buffer)+1, 1, stdout);
+    if (lib->count == 0) {
+        perror("Erro: não há o que visualizar\n");
+        return -1;
+    }
 
+    char op = (char)getchar();
+
+    FILE *docs = fopen(docname, "rb");
+    rewind(docs);
+
+    char *buffer;
+    //TODO TODO alterar valor
+    long size_buffer = 10;
+
+    while (op != 'q') {
+        switch (op) {
+            case 'n': {
+                //TODO
+                //ler documento no buffer
+                //escrever no stdout com sprintf
+                    //se no final, ajustar size_buffer
+                //fseek para frente
+
+                // free(buffer);
+                break;
+            }
+            case 'p': {
+                //TODO
+                break;
+            }
+            default: {
+                printf("Entre com uma opção válida: 'n' para o próximo bloco; 'p' para o bloco anterior; 'q' para sair\n");
+                break;
+            }
+        }
+        op = (char)getchar();
+    }
 
     //Liberar memória
     free(lib->docs);
-    //fclose(gbv);
-    //fclose(docs);
+    fclose(docs);
+
+    return 0;
 }
 
 
