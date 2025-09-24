@@ -27,8 +27,6 @@ int main(int argc, char *argv[]) {
         for (int i = 3; i < argc; i++) {
             gbv_remove(&lib, biblioteca,argv[i]);
         }
-    } else if (strcmp(opcao, "-v") == 0 && argc >= 4) {
-        gbv_view(&lib, argv[3]);
     }
 
 

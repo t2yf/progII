@@ -1,7 +1,4 @@
 #include "gbv.h"
-
-#include <ctype.h>
-
 #include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -404,7 +401,7 @@ int extract_data_docs(const char *docname, Document *docs) {
     return 0;
 }
 
-int docs_name_cmp(const Library *lib, const char *docname) {
+int docs_name_cmp(Library *lib, const char *docname) {
     for (int i = 0; i < lib->count; i++) {
         if (strcmp(lib->docs[i].name, docname) == 0) {
             return i;
@@ -743,186 +740,35 @@ int gbv_list(const Library *lib) {
 // fwrite(buffer, strlen(buffer)+1, 1, stdout);
 // TODO usar sprinf com %xd para imprimir em hexadecimal
 // TODO não fazer no gbv, fazer no próprio docs direto
-int is_text_docs(const char *docname) {
-    //Pegar o último ponto
-    const char *ext = strrchr(docname, '.');
-    if (ext == NULL) return -1;
-
-    ext++;
-
-    char lower[16];
-    int i = 0;
-    while (ext[i] && i < 15) {
-        lower[i] = (char)tolower(ext[i]);
-        i++;
-    }
-    lower[i] = '\0';
-
-    int amount_ext = 7;
-    const char *text_ext[] = {"txt", "c", "h", "md", "json", "csv", "html"};
-
-    for (int j = 0; j < amount_ext; j++) {
-       // fprintf(stderr, "j: %d\n", j);
-        if (strcmp(lower, text_ext[j]) == 0)
-            return 1;
-    }
-
-    return 0;
-}
-
-//TODO TODO testar
-void view_docs(char *buffer, int text, long size_read) {
-    char *read_buffer = malloc(size_read);
-    if (text == 1) {
-        fwrite(buffer, size_read, 1, stdout);
-        printf("\n");
-    } else {
-        //TODO testar com imagem
-        for (unsigned char *p = (unsigned char *)buffer; *p != '\0'; p++) {
-            printf("%02X ", *p);
-        }
-    }
-
-    free(read_buffer);
-}
-
-char read_only_one_char() {
-    char op;
-    scanf(" %c", &op);
-    int ln;
-    while ((ln = getchar()) != '\n' && ln != EOF);
-    return op;
-}
-
 int gbv_view(const Library *lib, const char *docname) {
     if (lib->count == 0) {
-        printf("Nada foi inserido no .gbv\n");
+        perror("Erro: não há o que visualizar\n");
         return -1;
     }
 
-    //Pegar tamanho do docs
-    int idx = docs_name_cmp(lib, docname);
-    if (idx == -1) {
-        printf("Docs não inserido no .gbv\n");
-        free(lib->docs);
-        return -1;
-    }
-    long size_doc_to_view = lib->docs[idx].size;
+    char op = (char)getchar();
 
-    //fprintf(stderr, "Tamanho do docs: %ld\n", size_doc_to_view);
-
-    //Abrir arquivo
     FILE *docs = fopen(docname, "rb");
-
-    if (!docs) {
-        perror("Erro: Não foi possível abrir o docs no view\n");
-        return -1;
-    }
-
     rewind(docs);
 
-    //Identificar se docs é texto
-    int text_doc = is_text_docs(docname);
-
-    //fprintf(stderr,"É texto? %d\n", text_doc);
-
-    //TODO TODO alterar valor, personalizado para cada documento
+    char *buffer;
+    //TODO TODO alterar valor
     long size_buffer = 10;
-    char *buffer = malloc(size_buffer);
-
-    long start_doc = 0;
-    long end_doc = size_doc_to_view;
-    //fprintf(stderr, "end_doc: %ld\n", end_doc);
-
-    //Começa no início do arquivo
-    long mini_size_buffer = size_buffer;
-    long start = 0;
-    //fprintf(stderr, "start: %ld\n", start);
-    long end = size_buffer;
-    //fprintf(stderr, "end: %ld\n", end);
-    fseek(docs, start, SEEK_SET);
-    fread(buffer, size_buffer, 1, docs);
-    view_docs(buffer, text_doc, size_buffer);
-
-    //Ler operação
-    char op = read_only_one_char();
 
     while (op != 'q') {
         switch (op) {
             case 'n': {
-                start = end;
-                if (start == end_doc || size_doc_to_view <= size_buffer) {
-                    printf("----------------\nFim do documento\n----------------\n");
-                    break;
-                }
-                //fprintf(stderr, "start: %ld\n", start);
-                end = end + size_buffer;
-                //fprintf(stderr, "end: %ld\n", end);
+                //TODO
+                //ler documento no buffer
+                //escrever no stdout com sprintf
+                    //se no final, ajustar size_buffer
+                //fseek para frente
 
-                if (end <= end_doc) {
-                    //Imprimir
-                    fseek(docs, start, SEEK_SET);
-                    fread(buffer, size_buffer, 1, docs);
-                    view_docs(buffer, text_doc, size_buffer);
-                } else {
-                    //TODO arrumar problema
-
-                    mini_size_buffer = end_doc - start;
-                    //fprintf(stderr, "mini_size_buffer: %ld\n", mini_size_buffer);
-                    end = end_doc;
-                    //fprintf(stderr, "end: %ld\n", end);
-
-                    //fprintf(stderr, "start: %ld\n", start);
-
-                    char *mini_buffer = malloc(mini_size_buffer);
-
-                    fseek(docs, start, SEEK_SET);
-                    fread(mini_buffer, mini_size_buffer, 1, docs);
-                    view_docs(mini_buffer, text_doc, mini_size_buffer);
-
-                    free(mini_buffer);
-
-                    break;
-                }
-
-                //TODO eu libero o buffer aqui?
+                // free(buffer);
                 break;
             }
             case 'p': {
-                end = start;
-                if (end == start_doc || size_doc_to_view <= size_buffer) {
-                    printf("-------------------\nInicio do documento\n-------------------\n");
-                    break;
-                }
-                fprintf(stderr, "end: %ld\n", end);
-                start = start - size_buffer;
-                fprintf(stderr, "start: %ld\n", start);
-
-
-                if (start > start_doc) {
-                    //Imprimir
-                    fseek(docs, start, SEEK_SET);
-                    fread(buffer, size_buffer, 1, docs);
-                    view_docs(buffer, text_doc, size_buffer);
-                } else {
-                    start = start_doc;
-                    mini_size_buffer = end - start;
-                    fprintf(stderr, "mini_size_buffer: %ld\n", mini_size_buffer);
-                    fprintf(stderr, "start: %ld\n", start);
-
-                    fprintf(stderr, "end: %ld\n", end);
-
-                    char *mini_buffer = malloc(mini_size_buffer);
-
-                    fseek(docs, start, SEEK_SET);
-                    fread(mini_buffer, mini_size_buffer, 1, docs);
-                    view_docs(mini_buffer, text_doc, mini_size_buffer);
-
-                    free(mini_buffer);
-
-                    break;
-                }
-
+                //TODO
                 break;
             }
             default: {
@@ -930,11 +776,10 @@ int gbv_view(const Library *lib, const char *docname) {
                 break;
             }
         }
-        op = read_only_one_char();
+        op = (char)getchar();
     }
 
     //Liberar memória
-    free(buffer);
     free(lib->docs);
     fclose(docs);
 

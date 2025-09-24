@@ -1,0 +1,218 @@
+//TODO testar para primeiro docs, meio ou último
+//Substituir docs no .gbv, idx do docs que será substituido
+unsigned long int replace_docs(FILE *gbv, FILE *docs, Library *lib, int idx, long size_new_docs, unsigned long int offset_lib_original) {
+    fprintf(stderr, "Entrou no repetido\n");
+    fprintf(stderr, "Tamanho novo: %ld\n", size_new_docs);
+
+    int idx_next_doc = idx + 1;
+    int idx_max = lib->count -1;
+
+    long offset_docs = lib->docs[idx].offset;
+    long size_old_docs = lib->docs[idx].size;
+    fprintf(stderr, "Tamanho antigo: %ld\n", size_old_docs);
+    unsigned long int offset_lib = offset_lib_original;
+    fprintf(stderr, "Offset lib original: %ld\n", offset_lib_original);
+    //Pegar valor absoluto
+    long diff_size = labs(size_old_docs - size_new_docs);
+
+    /*Caso 1: Docs aumentou de tamanho*/
+    if (size_new_docs > size_old_docs) {
+        fprintf(stderr, "Aumentou de tamanho\n");
+        //Empurrar
+        move_docs_back(gbv, lib, idx_next_doc, idx_max, diff_size);
+
+        //Novo valor offset do diretório
+        offset_lib = offset_lib + diff_size;
+
+
+    }
+
+    /*Caso 2: Docs diminuiu de tamanho */
+    if (size_new_docs < size_old_docs) {
+        fprintf(stderr, "Diminuiu de tamanho\n");
+        //Puxar
+        move_docs_forward(gbv, lib, idx_next_doc, idx_max, diff_size);
+
+        //Novo valor offset do diretório
+        offset_lib = offset_lib - diff_size;
+    }
+
+    /*Caso 3: Docs permanece do mesmo tamanho, ou seja, apenas reescrever o diretório*/
+
+    //Escrever docs
+    fprintf(stderr, "Offset docs: %ld\n", offset_docs);
+    write_docs(gbv, docs, size_new_docs, offset_docs);
+    fprintf(stderr, "Offset lib: %ld\n", offset_lib);
+    //Atualizar offset do diretório
+    //lib_offset_write(gbv, lib, offset_lib);
+
+    //Atualizar o diretório
+    //lib_write(gbv, lib, offset_lib);
+
+    return offset_lib;
+}
+
+
+// TODO !!!!! offset é unsigned long int e qtde de arquivos unsigned int
+// TODO se docs repetido, substituir !!!!
+int gbv_add(Library *lib, const char *archive, const char *docname) {
+    long offset_docs;
+    long offset_lib;
+
+    FILE *gbv = fopen(archive, "r+b");
+    int empty = gbv_empty(gbv);
+
+    /*Abrir novo docs somente leitura*/
+    FILE *docs = fopen(docname, "rb");
+
+    if (!gbv || !docs) {
+        perror("Erro ao abrir arquivo no gbv_add\n");
+        return -1;
+    }
+
+    //Pegar offset do diretório e atualizar
+    //TODO TODO TODO por que jogar para cima pela lixo de memória
+    unsigned long int offset_lib_original;
+    fseek(gbv, sizeof(int), SEEK_SET);
+    fread(&offset_lib_original, sizeof(unsigned long int), 1, gbv);
+    fprintf(stderr,"Offset lib: %ld", offset_lib_original);
+
+    /*Extrair dados do documento*/
+    Document docs_info;
+    //memset(&docs_info, 0, sizeof(docs_info));
+
+    int get_data = extract_data_docs(docname, &docs_info);
+    if (get_data != 0) {
+        perror("Erro ao coletar os dados do docs\n");
+        return -1;
+    }
+
+    /*Caso 1: Arquivo é repetido*/
+    //Procurar docs repetido
+    int repeated_docs = docs_name_cmp(lib, docname);
+
+    //Se for repetido
+    if (repeated_docs != -1) {
+        //TODO TODO dois problemas, offset_lib_orginal e pegar lib antigo
+        //TODO TODO atualizar dados de data do docs substituido >> acho que não está pegando direito
+        //TODO TODO cuidar problema escrita offset_lib_original e lib count
+        //TODO TODO ver se continua funcionando o inserir
+
+        //TODO teste
+        //fprintf(stderr, "Antes de substituir date: \n");
+        //gbv_list(lib);
+
+
+
+        //TODO teste
+        //fprintf(stderr, "Depois de substituir date: \n");
+        //gbv_list(lib);
+
+        unsigned long int new_offset_lib = replace_docs(gbv, docs, lib,repeated_docs, docs_info.size,offset_lib_original);
+
+        lib->docs[repeated_docs].date = docs_info.date;
+
+        //Escrever diretório
+        lib_offset_write(gbv, lib, new_offset_lib);
+        lib_write(gbv, lib, new_offset_lib);
+
+        //Liberar memória
+        free(lib->docs);
+        fclose(gbv);
+        fclose(docs);
+        return 0;
+    }
+
+    /*Colocar info docs no vetor do lib*/
+    // Se for o primeiro elemento, temos que alocar espaço
+    if (lib->count == 0) {
+        lib->docs = malloc(sizeof(Document));
+    } else {
+        lib->docs = realloc(lib->docs, sizeof(Document) * (lib->count + 1));
+    }
+
+
+    //TODO! [AVISO] Se for o primeiro elemento ele vai estar na posição 0 do vetor
+    lib->docs[lib->count] = docs_info;
+    long size_new_docs = lib->docs[lib->count].size;
+
+    /*Atualizar o lib*/
+    lib->count++;
+
+    /*Escrever count no .gbv*/
+    rewind(gbv);
+    fwrite(&lib->count, sizeof(int), 1, gbv);
+    //unsigned int offset_lib_area = sizeof(int);
+
+
+
+    /*Caso 1: .gbv está inicialmente vazio*/
+    if (empty) {
+        // Library fica logo após count + offset_lib_area + primeiro docs
+        offset_lib = sizeof(int) + sizeof(unsigned long int) +size_new_docs;
+
+        // Primeiro docs fica logo depois do count + offset_lib_area
+        offset_docs = sizeof(int) + sizeof(unsigned long int);
+
+        //Escrever info do offset do diretório
+        lib_offset_write(gbv, lib, offset_lib);
+
+
+        /*Atualizar offset do documento*/
+        lib->docs[lib->count -1].offset = offset_docs;
+
+        //Escrever docs
+
+        //Saber se o arquivo é muito grande
+        write_docs(gbv, docs, size_new_docs, offset_docs);
+
+        //Escrever diretório
+        lib_write(gbv, lib, offset_lib);
+
+
+        //TODO Liberar lib
+        free(lib->docs);
+
+        fclose(docs);
+        fclose(gbv);
+
+        return 0;
+    }
+
+    /*Caso 2: .gbv não vazio*/
+    //TODO [DÚVIDA] perguntar se eu empurro o diretório ou só reescrevo
+
+
+
+    /*Caso 2.2: Docs não é repetido*/
+
+
+
+    //Atualizar offset do diretório original
+    offset_lib = offset_lib_original + size_new_docs;
+
+    //Escrever info do offset do diretório
+    lib_offset_write(gbv, lib, offset_lib);
+
+
+    //Atualizar offset do documento
+    offset_docs = offset_lib_original;
+    lib->docs[lib->count -1].offset = offset_docs;
+
+    //Escrever documento
+
+    //Saber se o arquivo é muito grande
+    write_docs(gbv, docs, size_new_docs, offset_docs);
+
+
+    //Escrever diretório
+    lib_write(gbv, lib, offset_lib);
+
+    //TODO Liberar lib
+    free(lib->docs);
+
+    fclose(gbv);
+    fclose(docs);
+
+    return 0;
+}
