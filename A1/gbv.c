@@ -26,6 +26,10 @@
 
 //TODO funções aux
 
+void free_lib(Library *lib) {
+    free(lib->docs);
+}
+
 void lib_count_write(FILE *gbv, Library *lib) {
     rewind(gbv);
     fwrite(&lib->count, sizeof(int), 1, gbv);
@@ -158,7 +162,7 @@ void move_docs_forward(FILE *gbv, Library *lib, int idx_first, int idx_last, lon
     long where_to_move = offset_first - size_to_move;
 
     //Se invadir espaço onde está a quantidade de docs e offset do diretório (int + long), retornar
-    if (where_to_move <= 12) {
+    if (where_to_move < 12) {
         printf("Erro no move_docs_forward, where_to_move invadindo espaço indevido\n");
         return;
     }
@@ -513,7 +517,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
         lib_write(gbv, lib, new_offset_lib);
 
         //Liberar memória
-        free(lib->docs);
+        //TODO TODO teste
+        //free(lib->docs);
         fclose(gbv);
         fclose(docs);
         return 0;
@@ -567,7 +572,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 
 
         //Liberar memória
-        free(lib->docs);
+        //TODO TODO teste
+        //free(lib->docs);
 
         fclose(docs);
         fclose(gbv);
@@ -598,7 +604,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     lib_write(gbv, lib, offset_lib);
 
     //Liberar memória
-    free(lib->docs);
+    //TODO TODO teste
+    //free(lib->docs);
     fclose(gbv);
     fclose(docs);
 
@@ -632,7 +639,6 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
     long size_doc_to_remove = lib->docs[idx_to_remove].size;
     int idx_max = lib->count -1;
 
-    //TODO caso 1 ok!
     /*Caso 1: É o primeiro e único docs, ou seja, não existirá mais vetor de docs*/
     if (lib->count == 1) {
         where_truncate = sizeof(int) + sizeof(unsigned long int);
@@ -647,7 +653,6 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
     }
 
     /*Caso 2: É o último docs*/
-    //TODO ok!
     else if (idx_to_remove == lib->count - 1) {
         //Truncar no final do último
         long offset_next_to_last = lib->docs[idx_to_remove - 1].offset;
@@ -665,9 +670,9 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
         lib->docs = realloc(lib->docs, sizeof(Document) * (lib->count - 1));
 
     }
-    //TODO ok!
     /*Caso 3: É um docs no meio do vetor*/
     else {
+       // fprintf(stderr, "Aqui\n");
         //Truncar no final do último
         long offset_last = lib->docs[idx_max].offset;
         long size_last = lib->docs[idx_max].size;
@@ -703,7 +708,8 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
     lib_write(gbv, lib, new_offset_lib);
 
     //Liberar memória
-    free(lib->docs);
+    //TODO TODO teste
+    //free(lib->docs);
     fclose(gbv);
 
     return 0;
@@ -732,17 +738,6 @@ int gbv_list(const Library *lib) {
     return 0;
 }
 
-
-/// TODO fazer função auxiliar para ler os docs do .gbv e printar no terminal em hex tipo hexdump
-/// //https://stackoverflow.com/questions/19802940/trying-to-use-fwrite-to-write-a-string-in-binary-hex-in-c
-/// https://stackoverflow.com/questions/72717768/how-to-get-a-hex-dump-from-a-binary-file-into-c
-/// https://www.reddit.com/r/learnprogramming/comments/d686g4/read_a_binary_file_and_print_its_values_in_hex_in/
-// unsigned char buffer[8];
-// rewind(gbv);
-// fread(buffer, strlen(buffer)+1, 1, gbv);
-// fwrite(buffer, strlen(buffer)+1, 1, stdout);
-// TODO usar sprinf com %xd para imprimir em hexadecimal
-// TODO não fazer no gbv, fazer no próprio docs direto
 int is_text_docs(const char *docname) {
     //Pegar o último ponto
     const char *ext = strrchr(docname, '.');
