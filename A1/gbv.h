@@ -27,7 +27,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname);
 //TODO [AVISO] alterado o remove para receber o .gbv
 int gbv_remove(Library *lib, const char *archive, const char *docname);
 int gbv_list(const Library *lib);
-int gbv_view(const Library *lib, const char *docname);
+int gbv_view(const Library *lib, const char *archive, const char *docname);
 //TODO [AVISO] adicionado para poder inserir/remover vários arquivos de uma vez
 void free_lib(Library *lib);
 

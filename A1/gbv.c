@@ -790,13 +790,13 @@ char read_only_one_char() {
 }
 
 //TODO TODO arrumar para ler dentro do .gbv
-int gbv_view(const Library *lib, const char *docname) {
+int gbv_view(const Library *lib, const char *archive, const char *docname) {
     if (lib->count == 0) {
         printf("Nada foi inserido no .gbv\n");
         return -1;
     }
 
-    //Pegar tamanho do docs
+    //Pegar tamanho e offset do docs
     int idx = docs_name_cmp(lib, docname);
     if (idx == -1) {
         printf("Docs não inserido no .gbv\n");
@@ -804,18 +804,19 @@ int gbv_view(const Library *lib, const char *docname) {
         return -1;
     }
     long size_doc_to_view = lib->docs[idx].size;
+    long offset_doc_to_view = lib->docs[idx].offset;
 
-    //fprintf(stderr, "Tamanho do docs: %ld\n", size_doc_to_view);
+    fprintf(stderr, "idx: %d\n", idx);
+    fprintf(stderr, "Tamanho do docs: %ld\n", size_doc_to_view);
+    fprintf(stderr, "Offset: %ld\n", offset_doc_to_view);
 
-    //Abrir arquivo
-    FILE *docs = fopen(docname, "rb");
+    //Abrir .gbv
+    FILE *gbv = fopen(archive, "rb");
 
-    if (!docs) {
+    if (!gbv) {
         perror("Erro: Não foi possível abrir o docs no view\n");
         return -1;
     }
-
-    rewind(docs);
 
     //Identificar se docs é texto
     int text_doc = is_text_docs(docname);
@@ -826,18 +827,21 @@ int gbv_view(const Library *lib, const char *docname) {
     long size_buffer = 10;
     char *buffer = malloc(size_buffer);
 
-    long start_doc = 0;
-    long end_doc = size_doc_to_view;
-    //fprintf(stderr, "end_doc: %ld\n", end_doc);
+    long start_doc = offset_doc_to_view;
+    long end_doc = start_doc + size_doc_to_view;
+    fprintf(stderr, "start_doc: %ld\n", start_doc);
+    fprintf(stderr, "end_doc: %ld\n", end_doc);
 
     //Começa no início do arquivo
     long mini_size_buffer = size_buffer;
-    long start = 0;
-    //fprintf(stderr, "start: %ld\n", start);
-    long end = size_buffer;
-    //fprintf(stderr, "end: %ld\n", end);
-    fseek(docs, start, SEEK_SET);
-    fread(buffer, size_buffer, 1, docs);
+    long start = start_doc;
+    fprintf(stderr, "start: %ld\n", start);
+    long end = start + size_buffer;
+    fprintf(stderr, "end: %ld\n", end);
+
+    rewind(gbv);
+    fseek(gbv, start, SEEK_SET);
+    fread(buffer, size_buffer, 1, gbv);
     view_docs(buffer, text_doc, size_buffer);
 
     //Ler operação
@@ -857,8 +861,8 @@ int gbv_view(const Library *lib, const char *docname) {
 
                 if (end <= end_doc) {
                     //Imprimir
-                    fseek(docs, start, SEEK_SET);
-                    fread(buffer, size_buffer, 1, docs);
+                    fseek(gbv, start, SEEK_SET);
+                    fread(buffer, size_buffer, 1, gbv);
                     view_docs(buffer, text_doc, size_buffer);
                 } else {
                     //TODO arrumar problema
@@ -872,8 +876,8 @@ int gbv_view(const Library *lib, const char *docname) {
 
                     char *mini_buffer = malloc(mini_size_buffer);
 
-                    fseek(docs, start, SEEK_SET);
-                    fread(mini_buffer, mini_size_buffer, 1, docs);
+                    fseek(gbv, start, SEEK_SET);
+                    fread(mini_buffer, mini_size_buffer, 1, gbv);
                     view_docs(mini_buffer, text_doc, mini_size_buffer);
 
                     free(mini_buffer);
@@ -897,8 +901,8 @@ int gbv_view(const Library *lib, const char *docname) {
 
                 if (start > start_doc) {
                     //Imprimir
-                    fseek(docs, start, SEEK_SET);
-                    fread(buffer, size_buffer, 1, docs);
+                    fseek(gbv, start, SEEK_SET);
+                    fread(buffer, size_buffer, 1, gbv);
                     view_docs(buffer, text_doc, size_buffer);
                 } else {
                     start = start_doc;
@@ -910,8 +914,8 @@ int gbv_view(const Library *lib, const char *docname) {
 
                     char *mini_buffer = malloc(mini_size_buffer);
 
-                    fseek(docs, start, SEEK_SET);
-                    fread(mini_buffer, mini_size_buffer, 1, docs);
+                    fseek(gbv, start, SEEK_SET);
+                    fread(mini_buffer, mini_size_buffer, 1, gbv);
                     view_docs(mini_buffer, text_doc, mini_size_buffer);
 
                     free(mini_buffer);
@@ -932,7 +936,7 @@ int gbv_view(const Library *lib, const char *docname) {
     //Liberar memória
     free(buffer);
     free(lib->docs);
-    fclose(docs);
+    fclose(gbv);
 
     return 0;
 }
