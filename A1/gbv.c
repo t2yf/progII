@@ -16,13 +16,8 @@
     // TODO a lib, eu poderia ter problemas na movimentação e no substitui
 
 //TODO
-    // TODO testar inserir vários docs de uma vez e retirar vários de uma vez >> para isso fazer uma função que libere o docs e chamar na main
     // TODO testar nome de arquivo muito grande, não deixar ser criado
     // TODO reorganizar as funções no utils
-    // TODO testar mais remove, ver se tem algum caso não abordado
-
-    // TODO TODO testar isso caso espefícico do remove!!!
-    // TODO TODO para ter mais de uma chamada à add e remove, dar free no lib apenas na main, não dentro, se não dá conflito
 
 //TODO funções aux
 
@@ -120,7 +115,6 @@ void move_docs_back(FILE *gbv, Library *lib, int idx_first, int idx_last, long s
 
                 mini_chunk_size = aux_last - offset_first;
                 aux_pointer = offset_first;
-                //TODO TODO correção
                 aux_where_to_move = offset_first + size_to_move;
             }
             move_file(gbv, aux_pointer, mini_chunk_size, aux_where_to_move);
@@ -227,8 +221,6 @@ void read_write(FILE *read_file, FILE *write_file, unsigned long int start_read,
     /*Ler conteúdo do arquivo de leitura*/
     fseek(read_file, start_read, SEEK_SET);
     fread(buffer, size_content, 1, read_file);
-    //TODO TODO teste
-   // fwrite(buffer, size_content, 1, stdout);
 
     /*Escrever conteúdo no arquivo de escrita*/
     fseek(write_file, start_write, SEEK_SET);
@@ -349,10 +341,8 @@ int gbv_open(Library *lib, const char *filename) {
     /*Ler quantidade de docs*/
     fread(&lib->count, sizeof(int), 1, gbv);
 
-    //TODO TODO testar isso caso espefícico do remove
     /*Se foi deletado todos os docs*/
     if (lib->count == 0) {
-        fprintf(stderr, "Aqui\n");
         fclose(gbv);
         return 0;
     }
@@ -385,8 +375,6 @@ int extract_data_docs(const char *docname, Document *docs) {
     }
 
     /*Verificar se nome cabe no max*/
-    // TODO teste
-    // TODO se o nome for maior, cortar, não permitir
     unsigned long int tam_nome = strlen(docname);
     if (tam_nome > MAX_NAME -1) {
         perror("Nome do docs muito longo\n");
@@ -480,7 +468,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 
     /*Se está vazio ou apenas com qtde docs e offset lib*/
     int empty = gbv_empty(gbv);
-    //TODO TODO testar isso caso espefícico do remove
     int empty_docs = 0;
 
     //Pegar offset do diretório e atualizar
@@ -517,8 +504,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
         lib_write(gbv, lib, new_offset_lib);
 
         //Liberar memória
-        //TODO TODO teste
-        //free(lib->docs);
         fclose(gbv);
         fclose(docs);
         return 0;
@@ -528,7 +513,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     // Se for o primeiro elemento, temos que alocar espaço
     if (lib->count == 0) {
         lib->docs = malloc(sizeof(Document));
-        //TODO TODO testar isso caso espefícico do remove
         empty_docs = 1;
     } else {
         lib->docs = realloc(lib->docs, sizeof(Document) * (lib->count + 1));
@@ -543,11 +527,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 
     /*Escrever count no .gbv*/
     lib_count_write(gbv, lib);
-    // rewind(gbv);
-    // fwrite(&lib->count, sizeof(int), 1, gbv);
 
     /*Caso 2: .gbv está inicialmente vazio ou com apenas qtde de docs e offset lib*/
-    //TODO TODO testar isso caso espefícico do remove
     if (empty || empty_docs) {
         // Library fica logo após count + offset_lib_area + primeiro docs
         offset_lib = sizeof(int) + sizeof(unsigned long int) +size_new_docs;
@@ -569,11 +550,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 
         //Escrever diretório
         lib_write(gbv, lib, offset_lib);
-
-
-        //Liberar memória
-        //TODO TODO teste
-        //free(lib->docs);
 
         fclose(docs);
         fclose(gbv);
@@ -603,9 +579,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     //Escrever diretório
     lib_write(gbv, lib, offset_lib);
 
-    //Liberar memória
-    //TODO TODO teste
-    //free(lib->docs);
     fclose(gbv);
     fclose(docs);
 
@@ -613,7 +586,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 }
 
 //Remover do diretório, .gbv, arrastar os arquivos para frente, atualizar offsets do diretório
-//TODO ver se não dá problema ao inserir depois de apagar todos
 int gbv_remove(Library *lib, const char *archive, const char *docname){
     //Abrir gbv
     FILE *gbv = fopen(archive, "r+b");
@@ -672,7 +644,6 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
     }
     /*Caso 3: É um docs no meio do vetor*/
     else {
-       // fprintf(stderr, "Aqui\n");
         //Truncar no final do último
         long offset_last = lib->docs[idx_max].offset;
         long size_last = lib->docs[idx_max].size;
@@ -707,15 +678,11 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
     //Atualizar lib
     lib_write(gbv, lib, new_offset_lib);
 
-    //Liberar memória
-    //TODO TODO teste
-    //free(lib->docs);
     fclose(gbv);
 
     return 0;
 }
 
-// TODO pensar em casos de erro
 int gbv_list(const Library *lib) {
     if (lib->count == 0) {
         printf("Erro: Não há o que listar\n");
@@ -757,7 +724,6 @@ int is_text_docs(const char *docname) {
     const char *text_ext[] = {"txt", "c", "h", "md", "json", "csv", "html"};
 
     for (int j = 0; j < amount_ext; j++) {
-       // fprintf(stderr, "j: %d\n", j);
         if (strcmp(lower, text_ext[j]) == 0)
             return 1;
     }
@@ -765,14 +731,12 @@ int is_text_docs(const char *docname) {
     return 0;
 }
 
-//TODO TODO testar
 void view_docs(char *buffer, int text, long size_read) {
     char *read_buffer = malloc(size_read);
     if (text == 1) {
         fwrite(buffer, size_read, 1, stdout);
         printf("\n");
     } else {
-        //TODO testar com imagem
         for (unsigned char *p = (unsigned char *)buffer; *p != '\0'; p++) {
             printf("%02X ", *p);
         }
@@ -789,7 +753,6 @@ char read_only_one_char() {
     return op;
 }
 
-//TODO TODO arrumar para ler dentro do .gbv
 int gbv_view(const Library *lib, const char *archive, const char *docname) {
     if (lib->count == 0) {
         printf("Nada foi inserido no .gbv\n");
@@ -806,38 +769,28 @@ int gbv_view(const Library *lib, const char *archive, const char *docname) {
     long size_doc_to_view = lib->docs[idx].size;
     long offset_doc_to_view = lib->docs[idx].offset;
 
-    fprintf(stderr, "idx: %d\n", idx);
-    fprintf(stderr, "Tamanho do docs: %ld\n", size_doc_to_view);
-    fprintf(stderr, "Offset: %ld\n", offset_doc_to_view);
-
     //Abrir .gbv
     FILE *gbv = fopen(archive, "rb");
 
     if (!gbv) {
-        perror("Erro: Não foi possível abrir o docs no view\n");
+        perror("Erro: Não foi possível abrir o .gbv no view\n");
         return -1;
     }
 
     //Identificar se docs é texto
     int text_doc = is_text_docs(docname);
 
-    //fprintf(stderr,"É texto? %d\n", text_doc);
-
-    //TODO TODO alterar valor, personalizado para cada documento
+    //TODO TODO alterar valor
     long size_buffer = 10;
     char *buffer = malloc(size_buffer);
 
     long start_doc = offset_doc_to_view;
     long end_doc = start_doc + size_doc_to_view;
-    fprintf(stderr, "start_doc: %ld\n", start_doc);
-    fprintf(stderr, "end_doc: %ld\n", end_doc);
 
     //Começa no início do arquivo
     long mini_size_buffer = size_buffer;
     long start = start_doc;
-    fprintf(stderr, "start: %ld\n", start);
     long end = start + size_buffer;
-    fprintf(stderr, "end: %ld\n", end);
 
     rewind(gbv);
     fseek(gbv, start, SEEK_SET);
@@ -855,9 +808,7 @@ int gbv_view(const Library *lib, const char *archive, const char *docname) {
                     printf("----------------\nFim do documento\n----------------\n");
                     break;
                 }
-                //fprintf(stderr, "start: %ld\n", start);
                 end = end + size_buffer;
-                //fprintf(stderr, "end: %ld\n", end);
 
                 if (end <= end_doc) {
                     //Imprimir
@@ -865,14 +816,8 @@ int gbv_view(const Library *lib, const char *archive, const char *docname) {
                     fread(buffer, size_buffer, 1, gbv);
                     view_docs(buffer, text_doc, size_buffer);
                 } else {
-                    //TODO arrumar problema
-
                     mini_size_buffer = end_doc - start;
-                    //fprintf(stderr, "mini_size_buffer: %ld\n", mini_size_buffer);
                     end = end_doc;
-                    //fprintf(stderr, "end: %ld\n", end);
-
-                    //fprintf(stderr, "start: %ld\n", start);
 
                     char *mini_buffer = malloc(mini_size_buffer);
 
@@ -884,8 +829,6 @@ int gbv_view(const Library *lib, const char *archive, const char *docname) {
 
                     break;
                 }
-
-                //TODO eu libero o buffer aqui?
                 break;
             }
             case 'p': {
@@ -894,10 +837,7 @@ int gbv_view(const Library *lib, const char *archive, const char *docname) {
                     printf("-------------------\nInicio do documento\n-------------------\n");
                     break;
                 }
-                //(stderr, "end: %ld\n", end);
                 start = start - size_buffer;
-               // fprintf(stderr, "start: %ld\n", start);
-
 
                 if (start > start_doc) {
                     //Imprimir
@@ -907,10 +847,6 @@ int gbv_view(const Library *lib, const char *archive, const char *docname) {
                 } else {
                     start = start_doc;
                     mini_size_buffer = end - start;
-                    fprintf(stderr, "mini_size_buffer: %ld\n", mini_size_buffer);
-                    fprintf(stderr, "start: %ld\n", start);
-
-                    fprintf(stderr, "end: %ld\n", end);
 
                     char *mini_buffer = malloc(mini_size_buffer);
 
@@ -932,7 +868,6 @@ int gbv_view(const Library *lib, const char *archive, const char *docname) {
         }
         op = read_only_one_char();
     }
-
     //Liberar memória
     free(buffer);
     free(lib->docs);

@@ -3,7 +3,6 @@
 #include "gbv.h"
 
 int main(int argc, char *argv[]) {
-    // 3 apenas para criar o .gbv, seria ./gbv -a b.txt
     if (argc < 3) {
         printf("Uso: %s <opção> <biblioteca> [documentos...]\n", argv[0]);
         return 1;
@@ -30,8 +29,6 @@ int main(int argc, char *argv[]) {
         gbv_list(&lib);
     } else if (strcmp(opcao, "-v") == 0 && argc >= 4) {
         gbv_view(&lib, argv[3]);
-    } else if (strcmp(opcao, "-o") == 0 && argc >= 4) {
-        gbv_order(&lib, biblioteca, argv[3]);
     } else {
         printf("Opção inválida.\n");
     }

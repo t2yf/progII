@@ -1,13 +1,13 @@
 CC = gcc
 CFLAGS = -Wall -g
-#using c23
-all: gbv
-# change test2 por main
-gbv: test2.o gbv.o util.o
-	$(CC) $(CFLAGS) -o gbv test2.o gbv.o util.o
 
-test2.o: test2.c gbv.h
-	$(CC) $(CFLAGS) -c test2.c
+all: gbv
+
+gbv: main.o gbv.o util.o
+	$(CC) $(CFLAGS) -o gbv main.o gbv.o util.o
+
+main.o: main.c gbv.h
+	$(CC) $(CFLAGS) -c main.c
 
 gbv.o: gbv.c gbv.h
 	$(CC) $(CFLAGS) -c gbv.c

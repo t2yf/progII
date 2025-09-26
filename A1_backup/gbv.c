@@ -1,4 +1,7 @@
 #include "gbv.h"
+
+#include <ctype.h>
+
 #include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,6 +25,10 @@
     // TODO TODO para ter mais de uma chamada à add e remove, dar free no lib apenas na main, não dentro, se não dá conflito
 
 //TODO funções aux
+
+void free_lib(Library *lib) {
+    free(lib->docs);
+}
 
 void lib_count_write(FILE *gbv, Library *lib) {
     rewind(gbv);
@@ -155,7 +162,7 @@ void move_docs_forward(FILE *gbv, Library *lib, int idx_first, int idx_last, lon
     long where_to_move = offset_first - size_to_move;
 
     //Se invadir espaço onde está a quantidade de docs e offset do diretório (int + long), retornar
-    if (where_to_move <= 12) {
+    if (where_to_move < 12) {
         printf("Erro no move_docs_forward, where_to_move invadindo espaço indevido\n");
         return;
     }
@@ -401,7 +408,7 @@ int extract_data_docs(const char *docname, Document *docs) {
     return 0;
 }
 
-int docs_name_cmp(Library *lib, const char *docname) {
+int docs_name_cmp(const Library *lib, const char *docname) {
     for (int i = 0; i < lib->count; i++) {
         if (strcmp(lib->docs[i].name, docname) == 0) {
             return i;
@@ -510,7 +517,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
         lib_write(gbv, lib, new_offset_lib);
 
         //Liberar memória
-        free(lib->docs);
+        //TODO TODO teste
+        //free(lib->docs);
         fclose(gbv);
         fclose(docs);
         return 0;
@@ -564,7 +572,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 
 
         //Liberar memória
-        free(lib->docs);
+        //TODO TODO teste
+        //free(lib->docs);
 
         fclose(docs);
         fclose(gbv);
@@ -595,7 +604,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     lib_write(gbv, lib, offset_lib);
 
     //Liberar memória
-    free(lib->docs);
+    //TODO TODO teste
+    //free(lib->docs);
     fclose(gbv);
     fclose(docs);
 
@@ -629,7 +639,6 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
     long size_doc_to_remove = lib->docs[idx_to_remove].size;
     int idx_max = lib->count -1;
 
-    //TODO caso 1 ok!
     /*Caso 1: É o primeiro e único docs, ou seja, não existirá mais vetor de docs*/
     if (lib->count == 1) {
         where_truncate = sizeof(int) + sizeof(unsigned long int);
@@ -644,7 +653,6 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
     }
 
     /*Caso 2: É o último docs*/
-    //TODO ok!
     else if (idx_to_remove == lib->count - 1) {
         //Truncar no final do último
         long offset_next_to_last = lib->docs[idx_to_remove - 1].offset;
@@ -662,9 +670,9 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
         lib->docs = realloc(lib->docs, sizeof(Document) * (lib->count - 1));
 
     }
-    //TODO ok!
     /*Caso 3: É um docs no meio do vetor*/
     else {
+       // fprintf(stderr, "Aqui\n");
         //Truncar no final do último
         long offset_last = lib->docs[idx_max].offset;
         long size_last = lib->docs[idx_max].size;
@@ -700,14 +708,17 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
     lib_write(gbv, lib, new_offset_lib);
 
     //Liberar memória
-    free(lib->docs);
+    //TODO TODO teste
+    //free(lib->docs);
     fclose(gbv);
+
+    return 0;
 }
 
 // TODO pensar em casos de erro
 int gbv_list(const Library *lib) {
     if (lib->count == 0) {
-        perror("Erro: não há o que listar\n");
+        printf("Erro: Não há o que listar\n");
         return -1;
     }
     char buffer[20];
@@ -727,23 +738,207 @@ int gbv_list(const Library *lib) {
     return 0;
 }
 
-// TODO usar sprinf com %xd para imprimir em hexadecimal
-// TODO não fazer no gbv, fazer no próprio docs direto
-int gbv_view(const Library *lib, const char *docname) {
-    /// TODO fazer função auxiliar para ler os docs do .gbv e printar no terminal em hex tipo hexdump
-    /// //https://stackoverflow.com/questions/19802940/trying-to-use-fwrite-to-write-a-string-in-binary-hex-in-c
-    /// https://stackoverflow.com/questions/72717768/how-to-get-a-hex-dump-from-a-binary-file-into-c
-    /// https://www.reddit.com/r/learnprogramming/comments/d686g4/read_a_binary_file_and_print_its_values_in_hex_in/
-    // unsigned char buffer[8];
-    // rewind(gbv);
-    // fread(buffer, strlen(buffer)+1, 1, gbv);
-    // fwrite(buffer, strlen(buffer)+1, 1, stdout);
+int is_text_docs(const char *docname) {
+    //Pegar o último ponto
+    const char *ext = strrchr(docname, '.');
+    if (ext == NULL) return -1;
 
+    ext++;
+
+    char lower[16];
+    int i = 0;
+    while (ext[i] && i < 15) {
+        lower[i] = (char)tolower(ext[i]);
+        i++;
+    }
+    lower[i] = '\0';
+
+    int amount_ext = 7;
+    const char *text_ext[] = {"txt", "c", "h", "md", "json", "csv", "html"};
+
+    for (int j = 0; j < amount_ext; j++) {
+       // fprintf(stderr, "j: %d\n", j);
+        if (strcmp(lower, text_ext[j]) == 0)
+            return 1;
+    }
+
+    return 0;
+}
+
+//TODO TODO testar
+void view_docs(char *buffer, int text, long size_read) {
+    char *read_buffer = malloc(size_read);
+    if (text == 1) {
+        fwrite(buffer, size_read, 1, stdout);
+        printf("\n");
+    } else {
+        //TODO testar com imagem
+        for (unsigned char *p = (unsigned char *)buffer; *p != '\0'; p++) {
+            printf("%02X ", *p);
+        }
+    }
+
+    free(read_buffer);
+}
+
+char read_only_one_char() {
+    char op;
+    scanf(" %c", &op);
+    int ln;
+    while ((ln = getchar()) != '\n' && ln != EOF);
+    return op;
+}
+
+//TODO TODO arrumar para ler dentro do .gbv
+int gbv_view(const Library *lib, const char *archive, const char *docname) {
+    if (lib->count == 0) {
+        printf("Nada foi inserido no .gbv\n");
+        return -1;
+    }
+
+    //Pegar tamanho e offset do docs
+    int idx = docs_name_cmp(lib, docname);
+    if (idx == -1) {
+        printf("Docs não inserido no .gbv\n");
+        free(lib->docs);
+        return -1;
+    }
+    long size_doc_to_view = lib->docs[idx].size;
+    long offset_doc_to_view = lib->docs[idx].offset;
+
+    fprintf(stderr, "idx: %d\n", idx);
+    fprintf(stderr, "Tamanho do docs: %ld\n", size_doc_to_view);
+    fprintf(stderr, "Offset: %ld\n", offset_doc_to_view);
+
+    //Abrir .gbv
+    FILE *gbv = fopen(archive, "rb");
+
+    if (!gbv) {
+        perror("Erro: Não foi possível abrir o docs no view\n");
+        return -1;
+    }
+
+    //Identificar se docs é texto
+    int text_doc = is_text_docs(docname);
+
+    //fprintf(stderr,"É texto? %d\n", text_doc);
+
+    //TODO TODO alterar valor, personalizado para cada documento
+    long size_buffer = 10;
+    char *buffer = malloc(size_buffer);
+
+    long start_doc = offset_doc_to_view;
+    long end_doc = start_doc + size_doc_to_view;
+    fprintf(stderr, "start_doc: %ld\n", start_doc);
+    fprintf(stderr, "end_doc: %ld\n", end_doc);
+
+    //Começa no início do arquivo
+    long mini_size_buffer = size_buffer;
+    long start = start_doc;
+    fprintf(stderr, "start: %ld\n", start);
+    long end = start + size_buffer;
+    fprintf(stderr, "end: %ld\n", end);
+
+    rewind(gbv);
+    fseek(gbv, start, SEEK_SET);
+    fread(buffer, size_buffer, 1, gbv);
+    view_docs(buffer, text_doc, size_buffer);
+
+    //Ler operação
+    char op = read_only_one_char();
+
+    while (op != 'q') {
+        switch (op) {
+            case 'n': {
+                start = end;
+                if (start == end_doc || size_doc_to_view <= size_buffer) {
+                    printf("----------------\nFim do documento\n----------------\n");
+                    break;
+                }
+                //fprintf(stderr, "start: %ld\n", start);
+                end = end + size_buffer;
+                //fprintf(stderr, "end: %ld\n", end);
+
+                if (end <= end_doc) {
+                    //Imprimir
+                    fseek(gbv, start, SEEK_SET);
+                    fread(buffer, size_buffer, 1, gbv);
+                    view_docs(buffer, text_doc, size_buffer);
+                } else {
+                    //TODO arrumar problema
+
+                    mini_size_buffer = end_doc - start;
+                    //fprintf(stderr, "mini_size_buffer: %ld\n", mini_size_buffer);
+                    end = end_doc;
+                    //fprintf(stderr, "end: %ld\n", end);
+
+                    //fprintf(stderr, "start: %ld\n", start);
+
+                    char *mini_buffer = malloc(mini_size_buffer);
+
+                    fseek(gbv, start, SEEK_SET);
+                    fread(mini_buffer, mini_size_buffer, 1, gbv);
+                    view_docs(mini_buffer, text_doc, mini_size_buffer);
+
+                    free(mini_buffer);
+
+                    break;
+                }
+
+                //TODO eu libero o buffer aqui?
+                break;
+            }
+            case 'p': {
+                end = start;
+                if (end == start_doc || size_doc_to_view <= size_buffer) {
+                    printf("-------------------\nInicio do documento\n-------------------\n");
+                    break;
+                }
+                //(stderr, "end: %ld\n", end);
+                start = start - size_buffer;
+               // fprintf(stderr, "start: %ld\n", start);
+
+
+                if (start > start_doc) {
+                    //Imprimir
+                    fseek(gbv, start, SEEK_SET);
+                    fread(buffer, size_buffer, 1, gbv);
+                    view_docs(buffer, text_doc, size_buffer);
+                } else {
+                    start = start_doc;
+                    mini_size_buffer = end - start;
+                    fprintf(stderr, "mini_size_buffer: %ld\n", mini_size_buffer);
+                    fprintf(stderr, "start: %ld\n", start);
+
+                    fprintf(stderr, "end: %ld\n", end);
+
+                    char *mini_buffer = malloc(mini_size_buffer);
+
+                    fseek(gbv, start, SEEK_SET);
+                    fread(mini_buffer, mini_size_buffer, 1, gbv);
+                    view_docs(mini_buffer, text_doc, mini_size_buffer);
+
+                    free(mini_buffer);
+
+                    break;
+                }
+
+                break;
+            }
+            default: {
+                printf("Entre com uma opção válida: 'n' para o próximo bloco; 'p' para o bloco anterior; 'q' para sair\n");
+                break;
+            }
+        }
+        op = read_only_one_char();
+    }
 
     //Liberar memória
+    free(buffer);
     free(lib->docs);
-    //fclose(gbv);
-    //fclose(docs);
+    fclose(gbv);
+
+    return 0;
 }
 
 
