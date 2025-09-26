@@ -718,7 +718,7 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
 // TODO pensar em casos de erro
 int gbv_list(const Library *lib) {
     if (lib->count == 0) {
-        perror("Erro: não há o que listar\n");
+        printf("Erro: Não há o que listar\n");
         return -1;
     }
     char buffer[20];
@@ -789,6 +789,7 @@ char read_only_one_char() {
     return op;
 }
 
+//TODO TODO arrumar para ler dentro do .gbv
 int gbv_view(const Library *lib, const char *docname) {
     if (lib->count == 0) {
         printf("Nada foi inserido no .gbv\n");
@@ -889,9 +890,9 @@ int gbv_view(const Library *lib, const char *docname) {
                     printf("-------------------\nInicio do documento\n-------------------\n");
                     break;
                 }
-                fprintf(stderr, "end: %ld\n", end);
+                //(stderr, "end: %ld\n", end);
                 start = start - size_buffer;
-                fprintf(stderr, "start: %ld\n", start);
+               // fprintf(stderr, "start: %ld\n", start);
 
 
                 if (start > start_doc) {

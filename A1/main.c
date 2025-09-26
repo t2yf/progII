@@ -3,7 +3,6 @@
 #include "gbv.h"
 
 int main(int argc, char *argv[]) {
-    // 3 apenas para criar o .gbv, seria ./gbv -a b.txt
     if (argc < 3) {
         printf("Uso: %s <opção> <biblioteca> [documentos...]\n", argv[0]);
         return 1;
