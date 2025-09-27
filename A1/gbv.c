@@ -1,7 +1,6 @@
 #include "gbv.h"
 
 #include <ctype.h>
-
 #include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,33 +16,6 @@
 
 //TODO
     // TODO testar nome de arquivo muito grande, não deixar ser criado
-    // TODO reorganizar as funções no utils
-
-//TODO funções aux
-
-void free_lib(Library *lib) {
-    free(lib->docs);
-}
-
-void lib_count_write(FILE *gbv, Library *lib) {
-    rewind(gbv);
-    fwrite(&lib->count, sizeof(int), 1, gbv);
-}
-
-void lib_offset_write(FILE *gbv, Library *lib, unsigned long int offset_lib) {
-    //Escrever no .gbv o offset do diretório
-    rewind(gbv);
-    fseek(gbv, sizeof(int), SEEK_SET);
-    fwrite(&offset_lib, sizeof(unsigned long int), 1, gbv);
-}
-
-void lib_write(FILE *gbv, Library *lib, unsigned long int offset_lib) {
-    //No diretório tem apenas as info de cada doc
-    rewind(gbv);
-    fseek(gbv, offset_lib, SEEK_SET);
-    fwrite(lib->docs, sizeof(Document), lib->count, gbv);
-}
-
 
 void move_file(FILE *file, unsigned long int start, unsigned long int size_content, unsigned long int reference) {
     /*Colocar file no buffer*/
@@ -269,21 +241,6 @@ void write_docs(FILE *gbv, FILE *docs, long size_new_docs, long offset_docs) {
     }
 }
 
-
-//Verifica se o filername tem pelo menos 5 caracteres e se termina com .gbv
-int gbv_ext_verify(const char *filername) {
-    size_t size_name = strlen(filername);
-
-    return(size_name >= 5 && strcmp(filername + size_name - 4, ".gbv") == 0);
-}
-
-//Verifica se o .gbv está vazio, ou seja, se o final é igual ao início
-int gbv_empty(FILE *gbv) {
-    fseek(gbv, 0, SEEK_END);
-    unsigned long size = ftell(gbv);
-    return size == 0;
-}
-
 //Criar um .gbv
 int gbv_create(const char *filename) {
     FILE *gbv = fopen(filename, "w+b");
@@ -326,7 +283,6 @@ int gbv_open(Library *lib, const char *filename) {
 
     /*Se .gbv estiver vazio, não há nada para ler*/
     if (gbv_empty(gbv)) {
-        // TODO [DÚVIDA]>> mais algo ?
         lib->count = 0;
 
         fclose(gbv);
@@ -396,16 +352,6 @@ int extract_data_docs(const char *docname, Document *docs) {
     return 0;
 }
 
-int docs_name_cmp(const Library *lib, const char *docname) {
-    for (int i = 0; i < lib->count; i++) {
-        if (strcmp(lib->docs[i].name, docname) == 0) {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
 
 //Substituir docs no .gbv, idx do docs que será substituido
 unsigned long int replace_docs(FILE *gbv, FILE *docs, Library *lib, int idx, Document docs_info, unsigned long int offset_lib_original) {
@@ -451,7 +397,6 @@ unsigned long int replace_docs(FILE *gbv, FILE *docs, Library *lib, int idx, Doc
 
 
 //Adiciona docs, trata caso de ser repetido
-
 int gbv_add(Library *lib, const char *archive, const char *docname) {
     long offset_docs;
     long offset_lib;
@@ -477,7 +422,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
 
     /*Extrair dados do documento*/
     Document docs_info;
-    //memset(&docs_info, 0, sizeof(docs_info));
 
     int get_data = extract_data_docs(docname, &docs_info);
     if (get_data != 0) {
@@ -497,7 +441,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
         long offset_repeated_docs = lib->docs[repeated_docs].offset;
         lib->docs[repeated_docs] = docs_info;
         lib->docs[repeated_docs].offset = offset_repeated_docs;
-
 
         //Escrever diretório
         lib_offset_write(gbv, lib, new_offset_lib);
@@ -544,8 +487,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
         lib->docs[lib->count -1].offset = offset_docs;
 
         //Escrever docs
-
-        //Saber se o arquivo é muito grande
         write_docs(gbv, docs, size_new_docs, offset_docs);
 
         //Escrever diretório
@@ -565,16 +506,12 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     //Escrever info do offset do diretório
     lib_offset_write(gbv, lib, offset_lib);
 
-
     //Atualizar offset do documento
     offset_docs = offset_lib_original;
     lib->docs[lib->count -1].offset = offset_docs;
 
     //Escrever documento
-
-    //Saber se o arquivo é muito grande
     write_docs(gbv, docs, size_new_docs, offset_docs);
-
 
     //Escrever diretório
     lib_write(gbv, lib, offset_lib);
@@ -858,7 +795,6 @@ int gbv_view(const Library *lib, const char *archive, const char *docname) {
 
                     break;
                 }
-
                 break;
             }
             default: {
