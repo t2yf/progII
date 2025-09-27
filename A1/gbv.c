@@ -669,17 +669,19 @@ int is_text_docs(const char *docname) {
 }
 
 void view_docs(char *buffer, int text, long size_read) {
-    char *read_buffer = malloc(size_read);
     if (text == 1) {
         fwrite(buffer, size_read, 1, stdout);
         printf("\n");
     } else {
-        for (unsigned char *p = (unsigned char *)buffer; *p != '\0'; p++) {
-            printf("%02X ", *p);
+        for (int i = 0; i < size_read; i++) {
+            //unsigned char ignorar sinal, printar bonitinho :)
+            printf("%02X ", (unsigned char)buffer[i]);
         }
-    }
 
-    free(read_buffer);
+        // for (unsigned char *p = (unsigned char *)buffer; p < (unsigned char *)buffer + size_read; p++) {
+        //     printf("%02X ", *p);
+        // }
+    }
 }
 
 char read_only_one_char() {
@@ -719,7 +721,10 @@ int gbv_view(const Library *lib, const char *archive, const char *docname) {
 
     //TODO TODO alterar valor
     long size_buffer = 10;
-    char *buffer = malloc(size_buffer);
+    char *buffer = calloc(1, size_buffer);
+    if (!buffer) {
+        return -1;
+    }
 
     long start_doc = offset_doc_to_view;
     long end_doc = start_doc + size_doc_to_view;
