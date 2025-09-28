@@ -35,6 +35,7 @@ int main(int argc, char *argv[]) {
         gbv_view(&lib, biblioteca, argv[3]);
     } else {
         printf("Opção inválida.\n");
+        free_lib(&lib);
     }
 
     return 0;

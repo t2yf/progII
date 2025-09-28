@@ -710,6 +710,21 @@ int gbv_view(const Library *lib, const char *archive, const char *docname) {
         return -1;
     }
 
+    //Tentar abrir docname
+    FILE *docs = fopen(docname, "rb");
+    if (!docs) {
+        return -1;
+    }
+
+    int empty = gbv_empty(docs);
+    if (empty) {
+        printf("Arquivo vazio, não há o que visualizar\n");
+        fclose(docs);
+        free(lib->docs);
+        return -1;
+    }
+    fclose(docs);
+
     //Pegar tamanho e offset do docs
     int idx = docs_name_cmp(lib, docname);
     if (idx == -1) {
