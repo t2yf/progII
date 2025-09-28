@@ -284,7 +284,8 @@ int gbv_open(Library *lib, const char *filename) {
     /*Se .gbv estiver vazio, não há nada para ler*/
     if (gbv_empty(gbv)) {
         lib->count = 0;
-
+        //TODO não sei se pode dar erro isso
+        lib->docs = NULL;
         fclose(gbv);
         return 0;
     }
