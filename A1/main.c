@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
 
     const char *opcao = argv[1];
     const char *biblioteca = argv[2]; //.gbv
+    int i;
 
     Library lib;
     if (gbv_open(&lib, biblioteca) != 0) {
@@ -18,14 +19,15 @@ int main(int argc, char *argv[]) {
     }
 
     if (strcmp(opcao, "-a") == 0) {
-        for (int i = 3; i < argc; i++) {
+        for (i = 3; i < argc; i++) {
             gbv_add(&lib, biblioteca, argv[i]);
         }
         free_lib(&lib);
     } else if (strcmp(opcao, "-r") == 0) {
-        for (int i = 3; i < argc; i++) {
+        for (i = 3; i < argc; i++) {
             gbv_remove(&lib, biblioteca,argv[i]);
         }
+        //Último é lib->count = 0, nesse caso ele não libera, pq interpreta que não tem nada
         free_lib(&lib);
     } else if (strcmp(opcao, "-l") == 0) {
         gbv_list(&lib);

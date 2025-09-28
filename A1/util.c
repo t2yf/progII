@@ -17,6 +17,8 @@ void format_date(time_t t, char *buffer, int max) {
 
 /*Manipulação do Library ==============================================================================================*/
 void free_lib(Library *lib) {
+    if(!lib->docs) //lib->count == 0
+        return;
     free(lib->docs);
 }
 

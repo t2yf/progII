@@ -402,12 +402,16 @@ int gbv_add(Library *lib, const char *archive, const char *docname) {
     long offset_lib;
 
     FILE *gbv = fopen(archive, "r+b");
-
+    if (!gbv) {
+        perror("Erro ao abrir arquivo no gbv_add\n");
+        return -1;
+    }
     /*Abrir novo docs somente leitura*/
     FILE *docs = fopen(docname, "rb");
 
-    if (!gbv || !docs) {
+    if (!docs) {
         perror("Erro ao abrir arquivo no gbv_add\n");
+        fclose(gbv);
         return -1;
     }
 
@@ -530,6 +534,12 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
         return -1;
     }
 
+    if (lib->count == 0) {
+        printf("Não há o que remover\n");
+        fclose(gbv);
+        return -1;
+    }
+
     //Pegar offset do diretório
     unsigned long int new_offset_lib = 0;
     unsigned long int offset_lib_original;
@@ -541,6 +551,7 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
     int idx_to_remove = docs_name_cmp(lib, docname);
     if (idx_to_remove == -1) {
         perror("Erro: Docs não foi encontrado\n");
+        fclose(gbv);
         return -1;
     }
 
