@@ -27,7 +27,6 @@ int main(int argc, char *argv[]) {
         for (i = 3; i < argc; i++) {
             gbv_remove(&lib, biblioteca,argv[i]);
         }
-        //Último é lib->count = 0, nesse caso ele não libera, pq interpreta que não tem nada
         free_lib(&lib);
     } else if (strcmp(opcao, "-l") == 0) {
         gbv_list(&lib);

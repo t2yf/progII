@@ -5,6 +5,7 @@ make
 # tentar criar um arquivo sem .gbv
 ./gbv -a test.g a.txt
 
+
 # add arquivo que não existe
 valgrind ./gbv -a test.gbv d.txt e.txt
 
@@ -53,5 +54,10 @@ valgrind ./gbv -l test.gbv
 # remover primeiro
 valgrind ./gbv -r test.gbv sapinhoCifar10.png
 valgrind ./gbv -l test.gbv
+
+# add arq vazio
+valgrind ./gbv -a test.gbv empty.txt
+valgrind ./gbv -v test.gbv empty.txt
+valgrind ./gbv -r test.gbv empty.txt
 
 make clean

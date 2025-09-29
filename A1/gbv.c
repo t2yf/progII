@@ -713,6 +713,7 @@ int gbv_view(const Library *lib, const char *archive, const char *docname) {
     //Tentar abrir docname
     FILE *docs = fopen(docname, "rb");
     if (!docs) {
+        free(lib->docs);
         return -1;
     }
 
