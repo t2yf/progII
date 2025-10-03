@@ -9,13 +9,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-// TODO [ALTERAÇÕES FEITAS NOS ARQUIVO BASE]
-    // TODO [MAIN.C] Dar free no lib docs após o loop do for, visto que se eu der free dentro do gbv_add não vai mais existir uma lib para acessar, dando erro
-    // TODO [GBV.H] No gbv_remove adicionar o parâmetro "const char *archive", para que eu possa abrir o gbv e remover o docs do .gbv, já que se eu alterasse apenas
-    // TODO a lib, eu poderia ter problemas na movimentação e no substitui
 
-//TODO
-    // TODO testar nome de arquivo muito grande, não deixar ser criado
 
 void move_file(FILE *file, unsigned long int start, unsigned long int size_content, unsigned long int reference) {
     /*Colocar file no buffer*/
@@ -256,16 +250,17 @@ int gbv_create(const char *filename) {
 
 //Atribuir dados do .gbv na lib, caso não exista o .gbv, criar
 int gbv_open(Library *lib, const char *filename) {
+    //Verificar se o nome está certo
+    int ver_ext = gbv_ext_verify(filename);
+    if (!ver_ext) {
+        printf("Extensão do arquivo errada: use .gbv ou crie um arquivo com pelo menos um caractere de nome\n");
+
+        return -1;
+    }
+
     FILE *gbv = fopen(filename, "r+b");
 
     if (!gbv) {
-        //Verificar se o nome está certo
-        int ver_ext = gbv_ext_verify(filename);
-        if (!ver_ext) {
-            perror("Extensão do arquivo errada: use .gbv ou crie um arquivo com pelo menos um caractere de nome\n");
-            return -1;
-        }
-
         //Criar .gbv
         int create = gbv_create(filename);
         if (!create) {
