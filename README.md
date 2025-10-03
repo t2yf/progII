@@ -6,8 +6,8 @@ Esse repositório contém trabalhos desenvolvidos para a disciplina de Programa�
 usando técnicas de algoritmos e estruturas de dados clássicos considerando a noção de eficiência dos códigos.
 
 ## Trabalhos
-- [Jukebox Mercenária] A0: Implementar uma jukebox com fila de prioridade de acordo com valor colocado como entrada pelo usuário.
-- A1:
+- __[Jukebox Mercenária]__ A0: Implementar uma jukebox com fila de prioridade de acordo com valor colocado como entrada pelo usuário.
+- __[Gerenciador GBV]___ A1: Implementar um Gerenciador de Arquivos, cujas operações são: adicionar, remover, visualizar e listar.
 - A2:
 - A3:
 - A4:
