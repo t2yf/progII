@@ -2,13 +2,14 @@
 > **Programação II | A1 <br> Thamiris Yamate Fischer | GRR20243604**
 
 
-## Arquivos
+## Arquivos e diretórios
 - __`main.c` :__ Arquivo principal, recebe o comando do usuário e chama as funções para processar a instrução;
 - __`gbv.h` :__ Contém a estrutura do diretório e dos documentos e os protótipos das operações;
 - __`gbv.c` :__ Contém a implementação das operações,funções auxiliares das operações e funções para movimentação, escrita e leitura de documentos em disco; 
 - __`util.h` :__ Contém os protótipos de funções auxiliares para manipulação do diretório e verificaçõs úteis;
 - __`util.c` :__ Contém a implementação das funções do `util.h` ;
 - __`Makefile` :__ Contém definições de comandos de compilação e regras de dependência. 
+- __`testes` :__ Arquivos utilizados nos testes
 
 
 ## Implementação

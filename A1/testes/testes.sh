@@ -2,6 +2,8 @@
 clear
 make
 
+## Arquivos de teste e esse teste.sh devem estar no mesmo diretório dos outros arquivos
+
 # tentar criar um arquivo sem .gbv
 ./gbv -a test.g a.txt
 
