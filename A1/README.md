@@ -34,3 +34,4 @@ __4. Testes__ <br>Pensar em casos de uso e considerar os limites do código, ou 
 
 
 ### Bugs Conhecidos
+Casos conhecidos já foram arrumados nas alterações mencionadas
