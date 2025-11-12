@@ -12,7 +12,7 @@ typedef struct element{
 
 } element;
 
-element *create_element(int x, int y, int widht, int height, ALLEGRO_BITMAP *sprite);
+element *create_element(int x, int y, int width, int height, ALLEGRO_BITMAP *sprite);
 void destroy_element(element *element);
 
 #endif

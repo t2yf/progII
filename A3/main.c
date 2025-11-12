@@ -8,6 +8,7 @@
 /*Arquivos .h*/
 #include "utils.h"
 #include "character.h"
+#include "element.h"
 
 #define KEY_SEEN     1
 #define KEY_DOWN     2
@@ -42,7 +43,7 @@ int main(){
     /*Inicializar bitmaps*/
     ALLEGRO_BITMAP *background = al_load_bitmap("assets/background.png");
     ALLEGRO_BITMAP *shadow_sprite = al_load_bitmap("assets/shadow-spritesheets.png");
-    //[TODO]
+
 
     /*Primeiros eventos*/
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -51,7 +52,12 @@ int main(){
 
 
     /*Criar personagens*/
-    character *shadow = character_create(10, 10, 60, 80, shadow_sprite);
+    character *shadow = character_create(10, 10, 22, 30, shadow_sprite);
+
+    /*Atributos para plotar personagens*/
+    float shadow_width = shadow->basics->width;
+    float shadow_height = shadow->basics->height;
+    
 
     /*Definir teclado*/
     unsigned char key[ALLEGRO_KEY_MAX]; //Definir vetor de teclas, com tamanho de todas as teclas possíveis
@@ -60,6 +66,7 @@ int main(){
     /*Criar evento*/
     bool done = false;
     bool redraw = true;
+    bool active = false;
     ALLEGRO_EVENT event;
 
     /*Loop principal*/
@@ -72,14 +79,17 @@ int main(){
         {   
             //analisa o vetor para identificar qual ação tomar
             case ALLEGRO_EVENT_TIMER:
+                
                 if(key[ALLEGRO_KEY_UP])
                     //
                 if(key[ALLEGRO_KEY_DOWN])
                     //
                 if(key[ALLEGRO_KEY_LEFT]){
+                    active = true;
                     character_move_x(shadow, LEFT);
                 }
                 if(key[ALLEGRO_KEY_RIGHT]){
+                    active = true;
                     character_move_x(shadow, RIGHT);
                 }
                     
@@ -109,12 +119,26 @@ int main(){
         if(done)
             break;
 
+        if(active){
+            shadow_width += al_get_bitmap_width(shadow_sprite) / 14;
+        } else
+            shadow_width = shadow->basics->width;
+
+        if(shadow_width >= (al_get_bitmap_width(shadow_sprite) - 22))
+            shadow_width = 0;
+
         if(redraw && al_is_event_queue_empty(queue))
         {
             al_clear_to_color(al_map_rgb(0, 0, 0));
             //[TODO]
-
+            /*Plotar background*/
             al_draw_bitmap(background, 0, 0, 0);
+
+            /*Plotar shadow*/
+            //[TODO] retirar hardcoded
+            al_draw_bitmap_region(shadow_sprite, shadow_width, shadow_height, 22, 30, 10, 750, 0);
+
+
 
             al_flip_display();
 
