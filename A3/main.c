@@ -7,8 +7,8 @@
 
 /*Arquivos .h*/
 #include "utils.h"
-#include "character.h"
 #include "element.h"
+#include "character.h"
 
 #define KEY_SEEN     1
 #define KEY_DOWN     2
