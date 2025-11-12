@@ -1,2 +1,0 @@
-//Acho que em geral todo personagem vai ter um bitmap, altura, largura
-//Tanto shadow quanto os badniks andam, então daria para fazer os atributos básicos, incluindo andar para shadow e badniks herdarem então fazer um character.c(?)
