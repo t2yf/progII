@@ -1,0 +1,18 @@
+#ifndef __ELEMENT__ 																												
+#define __ELEMENT__	
+
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_image.h>
+
+typedef struct element{
+    int x, y; //posição
+    int width, height; //tamanho
+
+    ALLEGRO_BITMAP *sprite; //sprite do elemento
+
+} element;
+
+element *create_element(int x, int y, int widht, int height, ALLEGRO_BITMAP *sprite);
+void destroy_element(element *element);
+
+#endif
