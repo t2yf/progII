@@ -5,19 +5,16 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 
+/*Arquivos .h*/
+#include "utils.h"
+#include "character.h"
+
 #define KEY_SEEN     1
 #define KEY_DOWN     2
-#define X_SCREEN     640
-#define Y_SCREEN     480
+#define X_SCREEN     1280
+#define Y_SCREEN     720
 
 
-void must_init(bool test, const char *description)
-{
-    if(test) return;
-
-    printf("couldn't initialize %s\n", description);
-    exit(1);
-}
 
 int main(){
     /*Inicializações básicas*/
@@ -43,12 +40,18 @@ int main(){
 
 
     /*Inicializar bitmaps*/
+    ALLEGRO_BITMAP *background = al_load_bitmap("assets/background.png");
+    ALLEGRO_BITMAP *shadow_sprite = al_load_bitmap("assets/shadow-spritesheets.png");
     //[TODO]
 
     /*Primeiros eventos*/
     al_register_event_source(queue, al_get_keyboard_event_source());
     al_register_event_source(queue, al_get_display_event_source(disp));
     al_register_event_source(queue, al_get_timer_event_source(timer));
+
+
+    /*Criar personagens*/
+    character *shadow = character_create(10, 10, 60, 80, shadow_sprite);
 
     /*Definir teclado*/
     unsigned char key[ALLEGRO_KEY_MAX]; //Definir vetor de teclas, com tamanho de todas as teclas possíveis
@@ -73,10 +76,13 @@ int main(){
                     //
                 if(key[ALLEGRO_KEY_DOWN])
                     //
-                if(key[ALLEGRO_KEY_LEFT])
-                    //
-                if(key[ALLEGRO_KEY_RIGHT])
-                    //
+                if(key[ALLEGRO_KEY_LEFT]){
+                    character_move_x(shadow, LEFT);
+                }
+                if(key[ALLEGRO_KEY_RIGHT]){
+                    character_move_x(shadow, RIGHT);
+                }
+                    
 
                 if(key[ALLEGRO_KEY_ESCAPE])
                     done = true;
@@ -105,13 +111,20 @@ int main(){
 
         if(redraw && al_is_event_queue_empty(queue))
         {
+            al_clear_to_color(al_map_rgb(0, 0, 0));
             //[TODO]
+
+            al_draw_bitmap(background, 0, 0, 0);
 
             al_flip_display();
 
             redraw = false;
         }
     }
+
+    /*Destruir bitmaps*/
+    al_destroy_bitmap(background);
+    al_destroy_bitmap(shadow_sprite);
 
     /*Destruir*/
     al_destroy_font(font);
