@@ -1,0 +1,45 @@
+#define KEY_SEEN     1
+#define KEY_DOWN     2
+
+case ALLEGRO_EVENT_TIMER:
+                active = true;
+                if(key[ALLEGRO_KEY_UP])
+                    character_move_x(shadow, LEFT);
+                else if(key[ALLEGRO_KEY_DOWN])
+                    character_move_x(shadow, LEFT);
+                // if(key[ALLEGRO_KEY_D]){
+                //     active = true;
+                //     character_move_x(shadow, LEFT);
+                // }
+                else if(al_key_down(&keystate, ALLEGRO_KEY_A)){
+                    character_move_x(shadow, LEFT);
+                }
+                // if(key[ALLEGRO_KEY_A]){
+                //     active = true;
+                //     character_move_x(shadow, RIGHT);
+                // }
+                else if(al_key_down(&keystate, ALLEGRO_KEY_D)){
+                    character_move_x(shadow, RIGHT);
+                } else 
+                    active = false;
+                    
+
+                if(key[ALLEGRO_KEY_ESCAPE])
+                    done = true;
+
+                for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
+                    key[i] &= ~KEY_SEEN;
+
+                redraw = true;
+                break;
+            //quando uma tecla é pressionada pela primeira vez, dois bits são definidos como 1 na entrada correspondente a tecla
+            case ALLEGRO_EVENT_KEY_DOWN:
+                key[event.keyboard.keycode] = KEY_SEEN | KEY_DOWN;
+                break;
+            // quando eh solto a tecla o bit do Key_down vira 0
+            case ALLEGRO_EVENT_KEY_UP:
+            {
+                key[event.keyboard.keycode] &= ~KEY_DOWN;
+                active = false;
+                break;
+            }

@@ -14,3 +14,4 @@ void must_init(bool test, const char *description)
     printf("couldn't initialize %s\n", description);
     exit(1);
 }
+

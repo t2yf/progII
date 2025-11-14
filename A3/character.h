@@ -6,6 +6,7 @@
 
 #include "element.h"
 #include "utils.h"
+#include "joystick.h"
 
 #define LEFT    1
 #define RIGHT   2
@@ -20,6 +21,7 @@
 
 typedef struct character {
     element *basics;
+    joystick *control;
 
     //int hp;
 
