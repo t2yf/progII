@@ -14,18 +14,20 @@
 
 #define X_SCREEN     1280
 #define Y_SCREEN     720
+#define GROUND       550
 
 #define SPRITE_MULT_FACTOR 3.5
 
 int update_position(character *actor){
     int retorno = 0;
-
+    /*Shadow no ar ou agachado*/
     if(!actor->ground){
+        //Cair aos poucos (a cada frame)
         actor->vy -= GRAVITY;
         actor->jump(actor, UP);
-        //[TODO] mudar 550 para ground >>> define
-        if(actor->basics->y  > 550){
-            actor->basics->y = 550;
+        //Se não atingiu o chão, atingir o chão
+        if(actor->basics->y  > GROUND){
+            actor->basics->y = GROUND;
             actor->ground = 1;
             actor->vy = 0;
         }
@@ -35,8 +37,8 @@ int update_position(character *actor){
         //[TODO] fazer ele andar abaixado dps
         return DOWN;
     }
+    /*Shadow andando para a direita ou esquerda*/
     if(actor->control->left){
-        //printf("aqui\n");
         actor->walk(actor,LEFT);
 
         retorno = LEFT;
@@ -45,6 +47,7 @@ int update_position(character *actor){
         actor->walk(actor, RIGHT);
         retorno = RIGHT;
     }
+    /*Shadow pulando*/
     if(actor->control->up && actor->ground){
         actor->vy = 50;
         actor->jump(actor, UP);
@@ -52,7 +55,7 @@ int update_position(character *actor){
         retorno = UP;
     }
     
-
+    /*Permite que o personagem possa ir para os lados, mesmo que esteja no ar*/
     return retorno;
 }
 
@@ -94,7 +97,7 @@ int main(){
 
 
     /*Criar personagens*/
-    character *shadow = character_create(10, 550, 22, 30, shadow_sprite);
+    character *shadow = character_create(10, GROUND, 22, 30, shadow_sprite);
 
 
     /*Atributos para plotar personagens*/
@@ -104,14 +107,7 @@ int main(){
     float shadow_souceY = 30;
     
 
-    /*Definir teclado*/
-    //unsigned char key[ALLEGRO_KEY_MAX]; //Definir vetor de teclas, com tamanho de todas as teclas possíveis
-    //memset(key, 0, sizeof(key)); //Zerar esse vetor
-
     /*Criar evento*/
-    //bool done = false;
-    //bool redraw = true;
-    //bool active = false;
     ALLEGRO_EVENT event;
 
     int dir = 0;
@@ -129,7 +125,6 @@ int main(){
             }																															
 			if (event.keyboard.keycode == ALLEGRO_KEY_D) {
                 joystick_right(shadow->control);
-                //printf("%d\n", event.keyboard.keycode);
                 				
             }																							
 			if (event.keyboard.keycode == ALLEGRO_KEY_W) {
@@ -145,42 +140,45 @@ int main(){
             /*Plotar background*/
             al_draw_bitmap(background, 0, 0, 0);
 
+            /*Nova posição do Shadow*/
             shadow->position = update_position(shadow);
             int frameX;
             
             if (shadow->position == LEFT){
                 dir = ALLEGRO_FLIP_HORIZONTAL;
-                //
             } else if (shadow->position == RIGHT){
                 dir = 0;
             } 
 
-            /*Sprite parada*/
+            /*Shadow parado*/
             if(shadow->position == 0){
                 frameX = (al_get_timer_count(timer)/10) % 5;
+                //Sprite parada é a primeira
                 shadow_souceY = 0;
                 al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
             } 
+            /*Shadow andar em x e estiver no chão*/
             if((shadow->position == LEFT || shadow->position == RIGHT) && shadow->ground){
                 frameX = (al_get_timer_count(timer)/3) % 14;
                 shadow_souceY = 30;
                 al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
             }
+            /*Shadow no ar*/
             if(shadow->position == UP || !shadow->ground){
                 frameX = (al_get_timer_count(timer)/6) % 4;
                 shadow_souceY = 60;
                 al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
             }
+            /*Shadow agachado*/
             if(shadow->position == DOWN){
                 shadow_souceY = 120;
                 al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
             }
-
-
-            
+            /*Shadow rastejando*/
+            //[TODO]
         
 
-            /*Plotar shadow*/
+            /*[TODO] retirar dps*/
             al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
             
 

@@ -46,6 +46,7 @@ void character_move_x(character *actor, char direction){
 
 
 void character_move_y(character *actor, char direction){
+    //[TODO] fazer o rasteijar
     if(direction == DOWN){
         actor->basics->y -= actor->vy;
     }
@@ -62,6 +63,3 @@ void character_destroy(character *actor){
     }
 }
 
-
-//Acho que em geral todo personagem vai ter um bitmap, altura, largura
-//Tanto shadow quanto os badniks andam, então daria para fazer os atributos básicos, incluindo andar para shadow e badniks herdarem então fazer um character.c(?)

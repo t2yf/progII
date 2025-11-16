@@ -27,12 +27,12 @@ typedef struct character {
     int position;
 
     int ground; 
-    int vy;
+    int vy;     //velocidade em y
    
 
     void (*walk)(struct character *actor, char direction);
     void (*jump)(struct character *actor, char direction);
-    //void jump
+
     //void crouch
     //void fall
     //void idle
