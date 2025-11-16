@@ -8,8 +8,8 @@
 
 #define MAX_X 1280 // borda máx em x
 #define MAX_Y 720  // borda máx em y
-#define MAX_MAP_BOUNDARIE_X 1280 // tamanho máximo do background 
-#define MIN_MAP_BOUNDARIE_X 0
+#define MAX_MAP_BOUNDARIE_X 6400 // x máximo do background 
+#define MIN_MAP_BOUNDARIE_X 0 // x minimo do background
 
 
 #define STEPS  30
@@ -55,6 +55,12 @@ void character_move_x(character *actor, char direction){
         if(actor->basics->x > MAX_MAP_BOUNDARIE_X  - actor->basics->width*SPRITE_MULT_FACTOR){
             actor->basics->x = MAX_MAP_BOUNDARIE_X  - actor->basics->width*SPRITE_MULT_FACTOR;
         }
+
+        // Fixar câmera caso esteja nos limites
+        if(actor->basics->x % MAX_X == 0){
+            actor->fix_camera = 1;
+        }
+
     }
 }
 
