@@ -24,7 +24,7 @@ typedef struct character {
     joystick *control;
 
     //int hp;
-
+    int position;
 
     void (*walk)(struct character *actor, char direction);
     //void jump

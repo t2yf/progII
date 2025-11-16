@@ -43,3 +43,70 @@ case ALLEGRO_EVENT_TIMER:
                 active = false;
                 break;
             }
+
+
+
+
+
+ switch(event.type)
+        {   
+            //analisa o vetor para identificar qual ação tomar
+            case ALLEGRO_EVENT_TIMER:
+                active = true;
+                if(al_key_down(&keystate, ALLEGRO_KEY_A)){
+                    joystick_left(shadow->control);
+                    
+                }
+
+                else if(al_key_down(&keystate, ALLEGRO_KEY_D)){
+                    joystick_right(shadow->control);
+                   
+                } else 
+                    active = false;
+                    
+
+                if(al_key_down(&keystate, ALLEGRO_KEY_ESCAPE))
+                    done = true;
+
+
+                redraw = true;
+                break;
+
+                
+
+            case ALLEGRO_EVENT_DISPLAY_CLOSE:
+                done = true;
+                break;
+        }
+
+        if(done)
+            break;
+
+        if(active){
+            shadow_sourceX += al_get_bitmap_width(shadow_sprite) / 14;
+        } else
+            shadow_sourceX = shadow->basics->width;
+
+        if(shadow_sourceX >= (al_get_bitmap_width(shadow_sprite) - 1*22))
+            shadow_sourceX = 0;
+
+        if(redraw && al_is_event_queue_empty(queue))//
+        {
+            al_clear_to_color(al_map_rgb(0, 0, 0));
+            //[TODO]
+            /*Plotar background*/
+            al_draw_bitmap(background, 0, 0, 0);
+
+            /*Plotar shadow*/
+            //[TODO] retirar hardcoded
+            update_position(shadow);
+            al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
+            al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, 0);
+            
+
+
+
+            al_flip_display();
+
+            redraw = false;
+        }

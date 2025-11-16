@@ -17,14 +17,18 @@
 
 #define SPRITE_MULT_FACTOR 3.5
 
-void update_position(character *actor){
+int update_position(character *actor){
     if(actor->control->left){
         //printf("aqui\n");
         actor->walk(actor,LEFT);
+        return LEFT;
     }
     if(actor->control->right){
         actor->walk(actor, RIGHT);
+        return RIGHT;
     }
+
+    return 0;
 }
 
 
@@ -57,8 +61,6 @@ int main(){
     ALLEGRO_BITMAP *shadow_sprite = al_load_bitmap("assets/shadow-spritesheets.png");
     must_init(shadow_sprite, "shadow_sprite");
 
-    /*[TODO] alegro keyboard*/
-    ALLEGRO_KEYBOARD_STATE keystate;
 
     /*Primeiros eventos*/
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -78,8 +80,8 @@ int main(){
     
 
     /*Definir teclado*/
-    unsigned char key[ALLEGRO_KEY_MAX]; //Definir vetor de teclas, com tamanho de todas as teclas possíveis
-    memset(key, 0, sizeof(key)); //Zerar esse vetor
+    //unsigned char key[ALLEGRO_KEY_MAX]; //Definir vetor de teclas, com tamanho de todas as teclas possíveis
+    //memset(key, 0, sizeof(key)); //Zerar esse vetor
 
     /*Criar evento*/
     //bool done = false;
@@ -87,41 +89,72 @@ int main(){
     //bool active = false;
     ALLEGRO_EVENT event;
 
+    int dir = 0;
     /*Loop principal*/
     al_start_timer(timer);
     while(1)
     {
         al_wait_for_event(queue, &event);
-        /*[TODO] alegro keyboard*/
-        al_get_keyboard_state(&keystate);
+        
 
-        	
-
-       if(event.type == 30){
-            update_position(shadow);
-
-            al_clear_to_color(al_map_rgb(0, 0, 0));
+        if(event.type == ALLEGRO_EVENT_KEY_DOWN || event.type == ALLEGRO_EVENT_KEY_UP){
+            if (event.keyboard.keycode == ALLEGRO_KEY_A) {
+                joystick_left(shadow->control);
+                
+            }																															
+			if (event.keyboard.keycode == ALLEGRO_KEY_D) {
+                joystick_right(shadow->control);
+                //printf("%d\n", event.keyboard.keycode);
+                				
+            }																							
+			if (event.keyboard.keycode == ALLEGRO_KEY_W) {
+                joystick_up(shadow->control);
+                
+            }																														
+			if (event.keyboard.keycode == ALLEGRO_KEY_S) {
+                joystick_down(shadow->control);
+               
+            }			
+       
+        }else if (event.type == ALLEGRO_EVENT_TIMER){
             /*Plotar background*/
             al_draw_bitmap(background, 0, 0, 0);
 
-            shadow_sourceX += (al_get_bitmap_width(shadow_sprite) - 22) % 14;	
+            shadow->position = update_position(shadow);
+            int frameX;
             
+            if (shadow->position == LEFT){
+                dir = ALLEGRO_FLIP_HORIZONTAL;
+                //
+            } else if (shadow->position == RIGHT){
+                dir = 0;
+            } 
+
+            /*Sprite parada*/
+            if(shadow->position == 0){
+                frameX = (al_get_timer_count(timer)/10) % 5;
+                shadow_souceY = 0;
+                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
+            } 
+            if(shadow->position == LEFT || shadow->position == RIGHT){
+                frameX = (al_get_timer_count(timer)/3) % 14;
+                shadow_souceY = 30;
+                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
+            }
+
+
+            
+        
+
             /*Plotar shadow*/
             al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
-            al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, 0);
+            
 
             al_flip_display();
-       }else if(event.type == 10 || (event.type == 12)){
-            if (event.keyboard.keycode == 1) joystick_left(shadow->control);																															//Indica o evento correspondente no controle do primeiro jogador (botão de movimentação à esquerda) (!)
-			else if (event.keyboard.keycode == 4) {
-                joystick_right(shadow->control);
-                				
-            }																							//Indica o evento correspondente no controle do primeiro jogador (botão de movimentação à direita) (!)
-			else if (event.keyboard.keycode == 23) joystick_up(shadow->control);																														//Indica o evento correspondente no controle do primeiro jogador (botão de movimentação para cima) (!)
-			else if (event.keyboard.keycode == 19) joystick_down(shadow->control);							
-       } else if(event.type == 42 || al_key_down(&keystate, ALLEGRO_KEY_ESCAPE))
+        }else if(event.type == 42 || event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
             break;
 
+   
     }
 
     /*Destruir bitmaps*/
