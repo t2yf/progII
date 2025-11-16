@@ -44,7 +44,7 @@ void character_move_x(character *actor, char direction){
     if(direction == LEFT){
         actor->vx = -VEL_X;
         
-        //[TODO] se ele quiser voltar para a esquerda com rolling background
+         // Fixar câmera caso esteja nos limites
          if (!((actor->basics->x - 1*actor->vx) >=  4 * actor->basics->width)){
             //printf("está no limite\n");
         
