@@ -18,17 +18,42 @@
 #define SPRITE_MULT_FACTOR 3.5
 
 int update_position(character *actor){
+    int retorno = 0;
+
+    if(!actor->ground){
+        actor->vy -= GRAVITY;
+        actor->jump(actor, UP);
+        //[TODO] mudar 550 para ground >>> define
+        if(actor->basics->y  > 550){
+            actor->basics->y = 550;
+            actor->ground = 1;
+            actor->vy = 0;
+        }
+
+        
+    } else if(actor->control->down ){
+        //[TODO] fazer ele andar abaixado dps
+        return DOWN;
+    }
     if(actor->control->left){
         //printf("aqui\n");
         actor->walk(actor,LEFT);
-        return LEFT;
-    }
-    if(actor->control->right){
-        actor->walk(actor, RIGHT);
-        return RIGHT;
-    }
 
-    return 0;
+        retorno = LEFT;
+    }
+    else if(actor->control->right){
+        actor->walk(actor, RIGHT);
+        retorno = RIGHT;
+    }
+    if(actor->control->up && actor->ground){
+        actor->vy = 50;
+        actor->jump(actor, UP);
+        actor->ground =0;
+        retorno = UP;
+    }
+    
+
+    return retorno;
 }
 
 
@@ -136,10 +161,19 @@ int main(){
                 shadow_souceY = 0;
                 al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
             } 
-            if(shadow->position == LEFT || shadow->position == RIGHT){
+            if((shadow->position == LEFT || shadow->position == RIGHT) && shadow->ground){
                 frameX = (al_get_timer_count(timer)/3) % 14;
                 shadow_souceY = 30;
                 al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
+            }
+            if(shadow->position == UP || !shadow->ground){
+                frameX = (al_get_timer_count(timer)/6) % 4;
+                shadow_souceY = 60;
+                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
+            }
+            if(shadow->position == DOWN){
+                shadow_souceY = 120;
+                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
             }
 
 

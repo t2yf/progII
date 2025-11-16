@@ -12,7 +12,7 @@
 #define RIGHT   2
 #define UP      3
 #define DOWN    4
-
+#define GRAVITY 5;
 //criar
 //andar
 //abaixar
@@ -26,7 +26,12 @@ typedef struct character {
     //int hp;
     int position;
 
+    int ground; 
+    int vy;
+   
+
     void (*walk)(struct character *actor, char direction);
+    void (*jump)(struct character *actor, char direction);
     //void jump
     //void crouch
     //void fall

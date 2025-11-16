@@ -9,8 +9,8 @@
 #define MAX_X 1280 // borda máx em x
 #define MAX_Y 720  // borda máx em y
 
-#define STEPS  50
-
+#define STEPS  30
+//[TODO] mudar qtde steps
 
 character *character_create(int x, int y, int width, int height, ALLEGRO_BITMAP *sprite){
     character *new_charac = (character *) malloc (sizeof(character));
@@ -26,7 +26,9 @@ character *character_create(int x, int y, int width, int height, ALLEGRO_BITMAP 
     }
 
     new_charac->position = RIGHT;
+    new_charac->ground = 1;
     new_charac->walk = character_move_x;
+    new_charac->jump = character_move_y;
 
     return new_charac;
 }
@@ -39,10 +41,19 @@ void character_move_x(character *actor, char direction){
 
     if(direction == RIGHT){
         actor->basics->x += STEPS;
-        //printf("%d\n", actor->basics->x);
     }
 }
 
+
+void character_move_y(character *actor, char direction){
+    if(direction == DOWN){
+        actor->basics->y -= actor->vy;
+    }
+
+    if(direction == UP){
+        actor->basics->y -= actor->vy;
+    }
+}
 
 void character_destroy(character *actor){
     if(actor){
