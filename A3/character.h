@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "joystick.h"
 
+#define SPRITE_MULT_FACTOR 3.5
 #define LEFT    1
 #define RIGHT   2
 #define UP      3
@@ -24,10 +25,11 @@ typedef struct character {
     joystick *control;
 
     //int hp;
-    int position;
+    int position; //direção e posição que ele está
 
     int ground; 
     int vy;     //velocidade em y
+    int fix_camera; //para rolling background
    
 
     void (*walk)(struct character *actor, char direction);

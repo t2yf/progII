@@ -16,7 +16,7 @@
 #define Y_SCREEN     720
 #define GROUND       550
 
-#define SPRITE_MULT_FACTOR 3.5
+
 
 int update_position(character *actor){
     int retorno = 0;
