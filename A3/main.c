@@ -140,10 +140,11 @@ int main(){
                 joystick_down(shadow->control);
                
             }			
+            /*Evitar ficar infinitamente no rolling background*/
+            if(event.type == ALLEGRO_EVENT_KEY_UP)
+                shadow->fix_camera = 0;
        
         }else if (event.type == ALLEGRO_EVENT_TIMER){
-            
-
             /*Nova posição do Shadow*/
             shadow->position = update_position(shadow);
             int frameX;
@@ -154,6 +155,7 @@ int main(){
                 dir = 0;
             } 
 
+            
             int rolling;
             /*Ajustar Rolling Background*/
             if(shadow->fix_camera){
@@ -171,8 +173,7 @@ int main(){
             }
 
             /*Plotar background*/
-            if(shadow->fix_camera)
-                al_reparent_bitmap(sub_background, all_background, map_ajustment, 0, X_SCREEN, Y_SCREEN);
+            al_reparent_bitmap(sub_background, all_background, map_ajustment, 0, X_SCREEN, Y_SCREEN);
             al_draw_bitmap(sub_background, 0, 0, 0);
 
             /*Plotar o Shadow*/

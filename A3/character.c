@@ -45,8 +45,9 @@ void character_move_x(character *actor, char direction){
         actor->vx = -VEL_X;
         
         //[TODO] se ele quiser voltar para a esquerda com rolling background
-         if (!((actor->basics->x - 1*actor->vx) >=  2 * actor->basics->width)){
+         if (!((actor->basics->x - 1*actor->vx) >=  4 * actor->basics->width)){
             //printf("está no limite\n");
+        
             actor->fix_camera = 1;
             return;
         }
@@ -55,10 +56,10 @@ void character_move_x(character *actor, char direction){
     if(direction == RIGHT){
         actor->vx = VEL_X;
         //Se estiver na máxima direita, não ultrapassar
+      
         
-
         // Fixar câmera caso esteja nos limites
-        if(!((actor->basics->x + 1*actor->vx)<= MAX_X - 2*actor->basics->width)){
+        if(!((actor->basics->x + 1*actor->vx)<= MAX_X - 10 *actor->basics->width) ){
            // printf("está no limite\n");
             actor->fix_camera = 1;
             return;
@@ -68,15 +69,6 @@ void character_move_x(character *actor, char direction){
 
     actor->fix_camera = 0;
     actor->basics->x += actor->vx;
-     //Se estiver na máxima esquerda, não deixar ele ultrapassar
-    if(actor->basics->x  < MIN_MAP_BOUNDARIE_X){
-        actor->basics->x = MIN_MAP_BOUNDARIE_X;
-    }
-    if(actor->basics->x > MAX_MAP_BOUNDARIE_X  - actor->basics->width*SPRITE_MULT_FACTOR){
-        actor->basics->x = MAX_MAP_BOUNDARIE_X  - actor->basics->width*SPRITE_MULT_FACTOR;
-    }
-
-    
 }
 
 
