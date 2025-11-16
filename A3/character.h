@@ -8,7 +8,10 @@
 #include "utils.h"
 #include "joystick.h"
 
+#define MAX_MAP_BOUNDARIE_X 6400 // x máximo do background 
+#define MIN_MAP_BOUNDARIE_X 0 // x minimo do background
 #define SPRITE_MULT_FACTOR 3.5
+
 #define LEFT    1
 #define RIGHT   2
 #define UP      3
@@ -29,6 +32,7 @@ typedef struct character {
 
     int ground; 
     int vy;     //velocidade em y
+    int vx;     //velocidade em x
     int fix_camera; //para rolling background
    
 

@@ -8,12 +8,11 @@
 
 #define MAX_X 1280 // borda máx em x
 #define MAX_Y 720  // borda máx em y
-#define MAX_MAP_BOUNDARIE_X 6400 // x máximo do background 
-#define MIN_MAP_BOUNDARIE_X 0 // x minimo do background
 
 
-#define STEPS  30
-//[TODO] mudar qtde steps
+
+#define VEL_X  30 //velocidade em X
+//[TODO] mudar qtde 
 
 character *character_create(int x, int y, int width, int height, ALLEGRO_BITMAP *sprite){
     character *new_charac = (character *) malloc (sizeof(character));
@@ -28,6 +27,8 @@ character *character_create(int x, int y, int width, int height, ALLEGRO_BITMAP 
         return NULL;
     }
 
+    new_charac->vy = 0;
+    new_charac->vx = 30;
     new_charac->position = RIGHT;
     new_charac->ground = 1;
     new_charac->fix_camera = 0;
@@ -41,27 +42,41 @@ character *character_create(int x, int y, int width, int height, ALLEGRO_BITMAP 
 void character_move_x(character *actor, char direction){
     //TODO cuidar de se passar da tela
     if(direction == LEFT){
-        actor->basics->x -= STEPS;
-        //Se estiver na máxima esquerda, não deixar ele ultrapassar
-        if(actor->basics->x < MIN_MAP_BOUNDARIE_X){
-            actor->basics->x = MIN_MAP_BOUNDARIE_X;
-        }
+        actor->vx = -VEL_X;
+        
         //[TODO] se ele quiser voltar para a esquerda com rolling background
+         if (!((actor->basics->x - 1*actor->vx) >=  2 * actor->basics->width)){
+            //printf("está no limite\n");
+            actor->fix_camera = 1;
+            return;
+        }
     }
 
     if(direction == RIGHT){
-        actor->basics->x += STEPS;
+        actor->vx = VEL_X;
         //Se estiver na máxima direita, não ultrapassar
-        if(actor->basics->x > MAX_MAP_BOUNDARIE_X  - actor->basics->width*SPRITE_MULT_FACTOR){
-            actor->basics->x = MAX_MAP_BOUNDARIE_X  - actor->basics->width*SPRITE_MULT_FACTOR;
-        }
+        
 
         // Fixar câmera caso esteja nos limites
-        if(actor->basics->x % MAX_X == 0){
+        if(!((actor->basics->x + 1*actor->vx)<= MAX_X - 2*actor->basics->width)){
+           // printf("está no limite\n");
             actor->fix_camera = 1;
+            return;
         }
-
     }
+
+
+    actor->fix_camera = 0;
+    actor->basics->x += actor->vx;
+     //Se estiver na máxima esquerda, não deixar ele ultrapassar
+    if(actor->basics->x  < MIN_MAP_BOUNDARIE_X){
+        actor->basics->x = MIN_MAP_BOUNDARIE_X;
+    }
+    if(actor->basics->x > MAX_MAP_BOUNDARIE_X  - actor->basics->width*SPRITE_MULT_FACTOR){
+        actor->basics->x = MAX_MAP_BOUNDARIE_X  - actor->basics->width*SPRITE_MULT_FACTOR;
+    }
+
+    
 }
 
 

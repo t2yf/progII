@@ -85,7 +85,12 @@ int main(){
 
 
     /*Inicializar bitmaps*/
-    ALLEGRO_BITMAP *background = al_load_bitmap("assets/background.png");
+    //Background inteiro
+    ALLEGRO_BITMAP *all_background = al_load_bitmap("assets/background.png");
+    //Pedaço do background
+    ALLEGRO_BITMAP *sub_background = al_create_sub_bitmap(all_background, 0, 0, X_SCREEN, Y_SCREEN);
+    int map_ajustment = 0;
+
     ALLEGRO_BITMAP *shadow_sprite = al_load_bitmap("assets/shadow-spritesheets.png");
     must_init(shadow_sprite, "shadow_sprite");
 
@@ -137,8 +142,7 @@ int main(){
             }			
        
         }else if (event.type == ALLEGRO_EVENT_TIMER){
-            /*Plotar background*/
-            al_draw_bitmap(background, 0, 0, 0);
+            
 
             /*Nova posição do Shadow*/
             shadow->position = update_position(shadow);
@@ -150,6 +154,28 @@ int main(){
                 dir = 0;
             } 
 
+            int rolling;
+            /*Ajustar Rolling Background*/
+            if(shadow->fix_camera){
+                /*[TODO]Mudar dps velocidade*/
+                rolling = shadow->vx;
+            } else rolling = 0;
+
+            map_ajustment += rolling;
+            //Evitar passar dos limites
+            if(map_ajustment < MIN_MAP_BOUNDARIE_X){
+                map_ajustment = 0;
+            } 
+            if(map_ajustment > MAX_MAP_BOUNDARIE_X - X_SCREEN){
+                map_ajustment = MAX_MAP_BOUNDARIE_X - X_SCREEN;
+            }
+
+            /*Plotar background*/
+            if(shadow->fix_camera)
+                al_reparent_bitmap(sub_background, all_background, map_ajustment, 0, X_SCREEN, Y_SCREEN);
+            al_draw_bitmap(sub_background, 0, 0, 0);
+
+            /*Plotar o Shadow*/
             /*Shadow parado*/
             if(shadow->position == 0){
                 frameX = (al_get_timer_count(timer)/10) % 5;
@@ -190,7 +216,7 @@ int main(){
     }
 
     /*Destruir bitmaps*/
-    al_destroy_bitmap(background);
+    al_destroy_bitmap(all_background);
     al_destroy_bitmap(shadow_sprite);
 
     /*Destruir*/
