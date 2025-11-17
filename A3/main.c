@@ -221,7 +221,7 @@ int main(){
             
 
             /*Plotar inimigos*/
-
+            /*GamiGami*/
             //Cuidar para a sprite não seguir o background
             int gami_frameX;
             if(gamigami->basics->x > map_ajustment && gamigami->basics->x + gamigami->basics->width < map_ajustment + X_SCREEN){
@@ -232,6 +232,12 @@ int main(){
                 gami_frameX = (al_get_timer_count(timer)/10) %4;
                 al_draw_scaled_bitmap(badniks_sprite, gamigami->sourceX + (gamigami->basics->width*gami_frameX), gamigami->sourceY, gamigami->basics->width, gamigami->basics->height, gamigami->basics->x-map_ajustment, gamigami->basics->y, gamigami->basics->width*2, gamigami->basics->height*2, 0);
             }
+
+            /*[TODO] pierrot eh o mesmo do gamigami, só que muda o flip, faã isso com o enemie_dir*/
+
+            /*[TODO] runner*/
+            /*[TODO] idle*/
+
 
             /*[TODO] retirar dps*/
             al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
