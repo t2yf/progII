@@ -8,8 +8,7 @@
 #include "utils.h"
 #include "joystick.h"
 
-#define MAX_MAP_BOUNDARIE_X 6400 // x máximo do background 
-#define MIN_MAP_BOUNDARIE_X 0 // x minimo do background
+
 #define SPRITE_MULT_FACTOR 3.5
 
 #define LEFT    1

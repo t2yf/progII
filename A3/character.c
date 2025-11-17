@@ -11,7 +11,7 @@
 
 
 
-#define VEL_X  30 //velocidade em X
+#define CHARAC_VEL_X  30 //velocidade em X
 //[TODO] mudar qtde 
 
 character *character_create(int x, int y, int width, int height, ALLEGRO_BITMAP *sprite){
@@ -28,7 +28,7 @@ character *character_create(int x, int y, int width, int height, ALLEGRO_BITMAP 
     }
 
     new_charac->vy = 0;
-    new_charac->vx = 30;
+    new_charac->vx = CHARAC_VEL_X;
     new_charac->position = RIGHT;
     new_charac->ground = 1;
     new_charac->fix_camera = 0;
@@ -42,7 +42,7 @@ character *character_create(int x, int y, int width, int height, ALLEGRO_BITMAP 
 void character_move_x(character *actor, char direction){
     //TODO cuidar de se passar da tela
     if(direction == LEFT){
-        actor->vx = -VEL_X;
+        actor->vx = -CHARAC_VEL_X;
         
          // Fixar câmera caso esteja nos limites
          if (!((actor->basics->x - 1*actor->vx) >=  4 * actor->basics->width)){
@@ -54,7 +54,7 @@ void character_move_x(character *actor, char direction){
     }
 
     if(direction == RIGHT){
-        actor->vx = VEL_X;
+        actor->vx = CHARAC_VEL_X;
         //Se estiver na máxima direita, não ultrapassar
       
         

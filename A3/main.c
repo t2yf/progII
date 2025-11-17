@@ -10,6 +10,7 @@
 #include "element.h"
 #include "character.h"
 #include "joystick.h"
+#include "enemies.h"
 
 
 #define X_SCREEN     1280
@@ -87,12 +88,18 @@ int main(){
     /*Inicializar bitmaps*/
     //Background inteiro
     ALLEGRO_BITMAP *all_background = al_load_bitmap("assets/background.png");
+    must_init(all_background, "background");
     //Pedaço do background
     ALLEGRO_BITMAP *sub_background = al_create_sub_bitmap(all_background, 0, 0, X_SCREEN, Y_SCREEN);
     int map_ajustment = 0;
 
+    //Shadow
     ALLEGRO_BITMAP *shadow_sprite = al_load_bitmap("assets/shadow-spritesheets.png");
     must_init(shadow_sprite, "shadow_sprite");
+
+    //Badniks
+    ALLEGRO_BITMAP *badniks_sprite = al_load_bitmap("assets/badniks-spritesheets.png");
+    must_init(badniks_sprite, "badniks_sprite");
 
 
     /*Primeiros eventos*/
@@ -103,6 +110,11 @@ int main(){
 
     /*Criar personagens*/
     character *shadow = character_create(10, GROUND, 22, 30, shadow_sprite);
+
+    /*Criar inimigos*/
+    enemie *gamigami = enemie_create(700, GROUND+30, 47, 41, 2, PATROL, 0, 0, badniks_sprite);
+    //enemie *leon = enemie_create(500, GROUND, 63, 23, 1,  IDLE, 0, 192, badniks_sprite);
+    //enemie *rhino = enemie_create(700, GROUND, 39, 32, 2,RUNNER, 0, 122, badniks_sprite);
 
 
     /*Atributos para plotar personagens*/
@@ -115,7 +127,9 @@ int main(){
     /*Criar evento*/
     ALLEGRO_EVENT event;
 
-    int dir = 0;
+    int shadow_dir = 0;
+    int enemie_dir = 1;
+    
     /*Loop principal*/
     al_start_timer(timer);
     while(1)
@@ -150,9 +164,9 @@ int main(){
             int frameX;
             
             if (shadow->position == LEFT){
-                dir = ALLEGRO_FLIP_HORIZONTAL;
+                shadow_dir = ALLEGRO_FLIP_HORIZONTAL;
             } else if (shadow->position == RIGHT){
-                dir = 0;
+                shadow_dir = 0;
             } 
 
             
@@ -167,6 +181,7 @@ int main(){
             //Evitar passar dos limites
             if(map_ajustment < MIN_MAP_BOUNDARIE_X){
                 map_ajustment = 0;
+                rolling = 0;
             } 
             if(map_ajustment > MAX_MAP_BOUNDARIE_X - X_SCREEN){
                 map_ajustment = MAX_MAP_BOUNDARIE_X - X_SCREEN;
@@ -182,28 +197,41 @@ int main(){
                 frameX = (al_get_timer_count(timer)/10) % 5;
                 //Sprite parada é a primeira
                 shadow_souceY = 0;
-                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
+                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
             } 
             /*Shadow andar em x e estiver no chão*/
             if((shadow->position == LEFT || shadow->position == RIGHT) && shadow->ground){
                 frameX = (al_get_timer_count(timer)/3) % 14;
                 shadow_souceY = 30;
-                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
+                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
             }
             /*Shadow no ar*/
             if(shadow->position == UP || !shadow->ground){
                 frameX = (al_get_timer_count(timer)/6) % 4;
                 shadow_souceY = 60;
-                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
+                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
             }
             /*Shadow agachado*/
             if(shadow->position == DOWN){
                 shadow_souceY = 120;
-                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, dir);
+                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
             }
             /*Shadow rastejando*/
             //[TODO]
-        
+            
+
+            /*Plotar inimigos*/
+
+            //Cuidar para a sprite não seguir o background
+            int gami_frameX;
+            if(gamigami->basics->x > map_ajustment && gamigami->basics->x + gamigami->basics->width < map_ajustment + X_SCREEN){
+                //[TODO] fazer mais lento
+                if((gamigami->basics->x  + gamigami->basics->width) > 900 - map_ajustment || (gamigami->basics->x  + gamigami->basics->width) < 700 - map_ajustment)
+                    enemie_dir = -1*enemie_dir;
+                enemie_move(gamigami, enemie_dir, 2, rolling);
+                gami_frameX = (al_get_timer_count(timer)/10) %4;
+                al_draw_scaled_bitmap(badniks_sprite, gamigami->sourceX + (gamigami->basics->width*gami_frameX), gamigami->sourceY, gamigami->basics->width, gamigami->basics->height, gamigami->basics->x-map_ajustment, gamigami->basics->y, gamigami->basics->width*2, gamigami->basics->height*2, 0);
+            }
 
             /*[TODO] retirar dps*/
             al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);

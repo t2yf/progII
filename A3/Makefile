@@ -11,7 +11,7 @@ SRC = main.c
 OBJ_DIR = obj
 
 # Arquivos objeto
-OBJ = $(OBJ_DIR)/utils.o $(OBJ_DIR)/element.o $(OBJ_DIR)/character.o  $(OBJ_DIR)/joystick.o  $(OBJ_DIR)/main.o # Adicionar outros
+OBJ = $(OBJ_DIR)/utils.o $(OBJ_DIR)/element.o $(OBJ_DIR)/character.o  $(OBJ_DIR)/joystick.o  $(OBJ_DIR)/enemies.o  $(OBJ_DIR)/main.o # Adicionar outros 
 
 # Flags do compilador
 CFLAGS = -Wall -Werror -o  $(shell pkg-config --cflags allegro-5 allegro_font-5 allegro_image-5 allegro_primitives-5) 
