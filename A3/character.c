@@ -26,7 +26,7 @@ character *character_create(int x, int y, int width, int height, ALLEGRO_BITMAP 
         printf("Erro ao criar controle do personagem\n");
         return NULL;
     }
-
+    new_charac->hp = 10;
     new_charac->vy = 0;
     new_charac->vx = CHARAC_VEL_X;
     new_charac->position = RIGHT;

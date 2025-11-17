@@ -102,6 +102,12 @@ int main(){
     ALLEGRO_BITMAP *badniks_sprite = al_load_bitmap("assets/badniks-spritesheets.png");
     must_init(badniks_sprite, "badniks_sprite");
 
+    //Elementos - hp e esmeraldas
+    ALLEGRO_BITMAP *hp_emerald_sprites = al_load_bitmap("assets/hp_emeralds-spritesheets.png");
+    must_init(hp_emerald_sprites, "hp_emerals_sprite");
+
+ 
+
 
     /*Primeiros eventos*/
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -262,9 +268,10 @@ int main(){
 
 
 
-
-            /*[TODO] retirar dps >> trocar para vida*/
-            al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
+            /*HP*/
+            al_draw_scaled_bitmap(hp_emerald_sprites, 0, 0, 18, 15, 1100, 10, 18*3, 15*3, 0);
+            al_draw_textf(font, al_map_rgb(255, 255, 255), 1150, 30, 0,  " X%d", shadow->hp);
+            //al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
             
 
             al_flip_display();

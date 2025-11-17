@@ -26,7 +26,7 @@ typedef struct character {
     element *basics;
     joystick *control;
 
-    //int hp;
+    int hp;
     int position; //direção e posição que ele está
 
     int ground; 
