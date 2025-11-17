@@ -16,6 +16,7 @@
 #define X_SCREEN     1280
 #define Y_SCREEN     720
 #define GROUND       550
+#define RHINO_INI_POS 6400
 
 
 
@@ -112,9 +113,12 @@ int main(){
     character *shadow = character_create(10, GROUND, 22, 30, shadow_sprite);
 
     /*Criar inimigos*/
+    //Patrols
     enemie *gamigami = enemie_create(700, GROUND+30, 47, 41, 2, PATROL, 0, 0, badniks_sprite);
-    //enemie *leon = enemie_create(500, GROUND, 63, 23, 1,  IDLE, 0, 192, badniks_sprite);
-    //enemie *rhino = enemie_create(700, GROUND, 39, 32, 2,RUNNER, 0, 122, badniks_sprite);
+    //Idle
+    enemie *leon = enemie_create(1400, GROUND+60, 63, 23, 1,  IDLE, 0, 192, badniks_sprite);
+    //Runners
+    enemie *rhino = enemie_create(RHINO_INI_POS, GROUND+40, 39, 32, 2,RUNNER, 0, 122, badniks_sprite);
 
 
     /*Atributos para plotar personagens*/
@@ -221,11 +225,11 @@ int main(){
             
 
             /*Plotar inimigos*/
-            /*GamiGami*/
+            /*GamiGami - Patrol*/
             //Cuidar para a sprite não seguir o background
             int gami_frameX;
             if(gamigami->basics->x > map_ajustment && gamigami->basics->x + gamigami->basics->width < map_ajustment + X_SCREEN){
-                //[TODO] fazer mais lento
+                //Movimentação patrol (de um lado para outro)
                 if((gamigami->basics->x  + gamigami->basics->width) > 900 - map_ajustment || (gamigami->basics->x  + gamigami->basics->width) < 700 - map_ajustment)
                     enemie_dir = -1*enemie_dir;
                 enemie_move(gamigami, enemie_dir, 2, rolling);
@@ -235,11 +239,31 @@ int main(){
 
             /*[TODO] pierrot eh o mesmo do gamigami, só que muda o flip, faã isso com o enemie_dir*/
 
-            /*[TODO] runner*/
-            /*[TODO] idle*/
+            /*Rhino - Runner*/
+            int rhino_frameX;
+            int show_rhino = enemie_move(rhino, 0, 2, rolling);
+            if(show_rhino != -1){
+                if(rhino->basics->x > map_ajustment && rhino->basics->x + rhino->basics->width < map_ajustment + X_SCREEN){
+                    rhino_frameX = (al_get_timer_count(timer)/3) %3;
+                    al_draw_scaled_bitmap(badniks_sprite, rhino->sourceX + (rhino->basics->width*rhino_frameX), rhino->sourceY, rhino->basics->width, rhino->basics->height, rhino->basics->x-map_ajustment, rhino->basics->y, rhino->basics->width*2, rhino->basics->height*2, 0);
+                }
+            } else {
+                //Resetar
+                rhino->basics->x = RHINO_INI_POS;
+            }
+            
+            
+            /*Leon - Idle*/
+            int leon_frameX;
+            if(leon->basics->x > map_ajustment && leon->basics->x + leon->basics->width < map_ajustment + X_SCREEN){
+                leon_frameX = (al_get_timer_count(timer)) %6;
+                al_draw_scaled_bitmap(badniks_sprite, leon->sourceX + (leon->basics->width*leon_frameX), leon->sourceY, leon->basics->width, leon->basics->height, leon->basics->x-map_ajustment, leon->basics->y, leon->basics->width*2, leon->basics->height*2, 0);
+            }
 
 
-            /*[TODO] retirar dps*/
+
+
+            /*[TODO] retirar dps >> trocar para vida*/
             al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
             
 

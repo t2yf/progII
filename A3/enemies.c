@@ -26,12 +26,13 @@ enemie *enemie_create(int x, int y, int width, int height, int damage, int type_
 
 // a cada batida de relógio ele vai chegando ao inicio do mapa
 int update_runner_enemie(enemie *badnik, int vel_relative){
+    badnik->vx = -RUNNER_VEL;
     //Se ultrapassar o limite esquerdo do mapa, esse badnik pode sumir
     if(badnik->basics->x - badnik->vx < 0){
         return -1;
     }
 
-    badnik->basics->x -= badnik->vx - vel_relative;
+    badnik->basics->x += badnik->vx - vel_relative;
     return 1;
 }
 //ficar andando de um lado pra outro

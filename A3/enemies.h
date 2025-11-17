@@ -14,7 +14,7 @@
 #define PATROL 2
 
 #define PATROL_VEL  10
-#define RUNNER_VEL 30
+#define RUNNER_VEL 20
 
 typedef struct enemie{
     element *basics;
