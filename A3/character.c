@@ -83,6 +83,61 @@ void character_move_y(character *actor, char direction){
     }
 }
 
+int character_collide(character *actor, element *element, int map_ajustment){
+
+    int op = complex_collide(actor->basics->x, actor->basics->y, actor->basics->x + actor->basics->width*SPRITE_MULT_FACTOR, actor->basics->y + actor->basics->height*SPRITE_MULT_FACTOR,
+                              element->x - map_ajustment, 550, element->x + element->width*2 - map_ajustment, element->y + element->height*2);
+    //printf("op %d\n", op);
+    switch(op){
+        case 1:
+        {
+            //printf("caso 1\n");
+            actor->basics->x = element->x - map_ajustment - actor->basics->width*SPRITE_MULT_FACTOR;
+            break;
+        }
+        case 2:
+        {
+            //printf("caso 2\n");                    
+            actor->basics->x = element->x - map_ajustment + element->width*2;
+            break;
+        }
+        case 3:
+        {
+            //printf("caso 3\n");                    
+            actor->basics->y = 550 - element->height*2;
+            break;
+        }
+        case 4:
+        {
+           // printf("caso 4\n");
+            actor->basics->y = 550 - element->height*2;
+            break;
+        }
+        case 5:
+        {
+           // printf("caso 5\n");                    
+            actor->basics->y = element->y + element->height*2;
+            break;
+        }
+        case 6:
+        {
+            //printf("caso 6\n");                    
+            actor->basics->y = element->y + element->height*2;
+            break;
+        }
+        default:
+            //printf("default\n");                    
+            return 0;
+        }
+
+        if(actor->basics->x < actor->basics->width) {
+            actor->basics->x = actor->basics->width;
+        }
+        return 1;
+
+}
+
+
 void character_destroy(character *actor){
     if(actor){
         destroy_element(actor->basics);

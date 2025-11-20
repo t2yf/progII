@@ -11,16 +11,19 @@
 #include "character.h"
 #include "joystick.h"
 #include "enemies.h"
+#include "collision.h"
 
 
 #define X_SCREEN     1280
 #define Y_SCREEN     720
 #define GROUND       550
 #define RHINO_INI_POS 6400
+#define NUM_ENEMIES     6
 
+//vetor de inimigos -> para colisão
+element *array_enemie[NUM_ENEMIES];
 
-
-int update_position(character *actor){
+int update_position(character *actor, element **array_enemie, int map_ajustment){
     int retorno = 0;
     /*Shadow no ar ou agachado*/
     if(!actor->ground){
@@ -57,6 +60,11 @@ int update_position(character *actor){
         retorno = UP;
     }
     
+    /*Colisão*/
+    for(int i=0; i<3; i++)
+        character_collide(actor, array_enemie[i], map_ajustment);
+
+
     /*Permite que o personagem possa ir para os lados, mesmo que esteja no ar*/
     return retorno;
 }
@@ -106,8 +114,6 @@ int main(){
     ALLEGRO_BITMAP *hp_emerald_sprites = al_load_bitmap("assets/hp_emeralds-spritesheets.png");
     must_init(hp_emerald_sprites, "hp_emerals_sprite");
 
- 
-
 
     /*Primeiros eventos*/
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -119,12 +125,20 @@ int main(){
     character *shadow = character_create(10, GROUND, 22, 30, shadow_sprite);
 
     /*Criar inimigos*/
+    //TODO problemas com o y do inimigo, por causa do chão dele
+    //TODO problemas com o runner, fica puxando o shadow
     //Patrols
-    enemie *gamigami = enemie_create(700, GROUND+30, 47, 41, 2, PATROL, 0, 0, badniks_sprite);
+    enemie *gamigami = enemie_create(700, 580, 47, 41, 2, PATROL, 0, 0, badniks_sprite); //+30
     //Idle
-    enemie *leon = enemie_create(1400, GROUND+60, 63, 23, 1,  IDLE, 0, 192, badniks_sprite);
+    enemie *leon = enemie_create(1400, 610, 63, 23, 1,  IDLE, 0, 192, badniks_sprite); //+60
     //Runners
-    enemie *rhino = enemie_create(RHINO_INI_POS, GROUND+40, 39, 32, 2,RUNNER, 0, 122, badniks_sprite);
+    enemie *rhino = enemie_create(RHINO_INI_POS, 590, 39, 32, 2,RUNNER, 0, 122, badniks_sprite); //+40
+
+    /*Colocar inimigos num array*/
+    array_enemie[0] = gamigami->basics;
+    array_enemie[1] = leon->basics;
+    array_enemie[2] = rhino->basics;
+    //[TODO] colocar o resto dos inimigos
 
 
     /*Atributos para plotar personagens*/
@@ -169,17 +183,7 @@ int main(){
                 shadow->fix_camera = 0;
        
         }else if (event.type == ALLEGRO_EVENT_TIMER){
-            /*Nova posição do Shadow*/
-            shadow->position = update_position(shadow);
-            int frameX;
-            
-            if (shadow->position == LEFT){
-                shadow_dir = ALLEGRO_FLIP_HORIZONTAL;
-            } else if (shadow->position == RIGHT){
-                shadow_dir = 0;
-            } 
 
-            
             int rolling;
             /*Ajustar Rolling Background*/
             if(shadow->fix_camera){
@@ -200,35 +204,6 @@ int main(){
             /*Plotar background*/
             al_reparent_bitmap(sub_background, all_background, map_ajustment, 0, X_SCREEN, Y_SCREEN);
             al_draw_bitmap(sub_background, 0, 0, 0);
-
-            /*Plotar o Shadow*/
-            /*Shadow parado*/
-            if(shadow->position == 0){
-                frameX = (al_get_timer_count(timer)/10) % 5;
-                //Sprite parada é a primeira
-                shadow_souceY = 0;
-                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
-            } 
-            /*Shadow andar em x e estiver no chão*/
-            if((shadow->position == LEFT || shadow->position == RIGHT) && shadow->ground){
-                frameX = (al_get_timer_count(timer)/3) % 14;
-                shadow_souceY = 30;
-                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
-            }
-            /*Shadow no ar*/
-            if(shadow->position == UP || !shadow->ground){
-                frameX = (al_get_timer_count(timer)/6) % 4;
-                shadow_souceY = 60;
-                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
-            }
-            /*Shadow agachado*/
-            if(shadow->position == DOWN){
-                shadow_souceY = 120;
-                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
-            }
-            /*Shadow rastejando*/
-            //[TODO]
-            
 
             /*Plotar inimigos*/
             /*GamiGami - Patrol*/
@@ -262,16 +237,59 @@ int main(){
             /*Leon - Idle*/
             int leon_frameX;
             if(leon->basics->x > map_ajustment && leon->basics->x + leon->basics->width < map_ajustment + X_SCREEN){
+                printf("Leon X: %d\n", leon->basics->x);
                 leon_frameX = (al_get_timer_count(timer)) %6;
                 al_draw_scaled_bitmap(badniks_sprite, leon->sourceX + (leon->basics->width*leon_frameX), leon->sourceY, leon->basics->width, leon->basics->height, leon->basics->x-map_ajustment, leon->basics->y, leon->basics->width*2, leon->basics->height*2, 0);
             }
 
+            /*Nova posição do Shadow*/
+            //printf("shadow X: %d || gamigami X %d\n", shadow->basics->x, array_enemie[0]->x);
+            shadow->position = update_position(shadow, array_enemie, map_ajustment);
+            int frameX;
+            
+            if (shadow->position == LEFT){
+                shadow_dir = ALLEGRO_FLIP_HORIZONTAL;
+            } else if (shadow->position == RIGHT){
+                shadow_dir = 0;
+            } 
 
+            /*Plotar o Shadow*/
+            /*Shadow parado*/
+            if(shadow->position == 0){
+                frameX = (al_get_timer_count(timer)/10) % 5;
+                //Sprite parada é a primeira
+                shadow_souceY = 0;
+                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+            } 
+            /*Shadow andar em x e estiver no chão*/
+            if((shadow->position == LEFT || shadow->position == RIGHT) && shadow->ground){
+                frameX = (al_get_timer_count(timer)/3) % 14;
+                shadow_souceY = 30;
+                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+            }
+            /*Shadow no ar*/
+            if(shadow->position == UP || !shadow->ground){
+                frameX = (al_get_timer_count(timer)/6) % 4;
+                shadow_souceY = 60;
+                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+            }
+            /*Shadow agachado*/
+            if(shadow->position == DOWN){
+                shadow_souceY = 120;
+                al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+            }
+            /*Shadow rastejando*/
+            //[TODO]
+            
+
+            
+
+            /*Colisão*/
 
             /*HP*/
             al_draw_scaled_bitmap(hp_emerald_sprites, 0, 0, 18, 15, 1100, 10, 18*3, 15*3, 0);
-            al_draw_textf(font, al_map_rgb(255, 255, 255), 1150, 30, 0,  " X%d", shadow->hp);
-            //al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
+            al_draw_textf(font, al_map_rgb(255, 255, 255), 1150, 30, 0,  " X %d", shadow->hp);
+            al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
             
 
             al_flip_display();
