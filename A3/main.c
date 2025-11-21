@@ -127,6 +127,15 @@ int main(){
     ALLEGRO_BITMAP *menu_screen = al_load_bitmap("assets/screen_menu.png");
     must_init(menu_screen, "menu");
 
+    ALLEGRO_BITMAP *pause_screen = al_load_bitmap("assets/screen_pause.png");
+    must_init(pause_screen, "pause");
+
+    ALLEGRO_BITMAP *win_screen = al_load_bitmap("assets/screen_win.png");
+    must_init(win_screen, "win");
+
+    ALLEGRO_BITMAP *lose_screen = al_load_bitmap("assets/screen_lose.png");
+    must_init(lose_screen, "lose");
+
 
     /*Primeiros eventos*/
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -176,9 +185,27 @@ int main(){
     {
         al_wait_for_event(queue, &event);
         
-        //if(event.type == ALLEGRO_KEY_DOWN){
-          
-        //}
+        if(event.type == ALLEGRO_EVENT_KEY_DOWN){
+            if(event.keyboard.keycode == ALLEGRO_KEY_P){
+                if(tela == MENU){
+                   
+                    tela = MENU;
+                   
+                }
+                else if(tela != IN_GAME ){
+                    
+                    tela = IN_GAME;
+                } else tela = PAUSE;
+            }
+
+            if(event.keyboard.keycode == ALLEGRO_KEY_ENTER){
+                if(tela == WIN || tela == LOSE){
+                    done = true;
+                } else if (tela == MENU || tela == PAUSE){
+                    tela = IN_GAME;
+                }
+            }
+        }
         if(event.type == ALLEGRO_EVENT_KEY_DOWN || event.type == ALLEGRO_EVENT_KEY_UP){
             if (event.keyboard.keycode == ALLEGRO_KEY_A) {
                 joystick_left(shadow->control);
@@ -200,19 +227,9 @@ int main(){
             if(event.type == ALLEGRO_EVENT_KEY_UP)
                 shadow->fix_camera = 0;
             
-            if(event.keyboard.keycode == ALLEGRO_KEY_P){
-                if(tela != IN_GAME){
-                    done = true;
-                } else tela = PAUSE;
-            }
+            
 
-            if(event.keyboard.keycode == ALLEGRO_KEY_ENTER){
-                if(tela == WIN || tela == LOSE){
-                    done = true;
-                } else if (tela == MENU){
-                    tela = IN_GAME;
-                }
-            }
+            
             
        
         }else if (event.type == ALLEGRO_EVENT_TIMER){
@@ -328,6 +345,12 @@ int main(){
                 
 
                 
+            } else if (tela == LOSE){
+                al_draw_bitmap(lose_screen, 0, 0, 0);
+            } else if (tela == PAUSE){
+                 al_draw_bitmap(pause_screen, 0, 0, 0);
+            } else if (tela == WIN){
+                 al_draw_bitmap(win_screen, 0, 0, 0);
             }
             al_flip_display();
         }else if(event.type == 42 || event.keyboard.keycode == ALLEGRO_KEY_ESCAPE || done)
