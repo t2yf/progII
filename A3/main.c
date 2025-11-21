@@ -227,10 +227,6 @@ int main(){
             if(event.type == ALLEGRO_EVENT_KEY_UP)
                 shadow->fix_camera = 0;
             
-            
-
-            
-            
        
         }else if (event.type == ALLEGRO_EVENT_TIMER){
             if(tela == MENU){
@@ -362,6 +358,10 @@ int main(){
     /*Destruir bitmaps*/
     al_destroy_bitmap(all_background);
     al_destroy_bitmap(shadow_sprite);
+    al_destroy_bitmap(menu_screen);
+    al_destroy_bitmap(pause_screen);
+    al_destroy_bitmap(lose_screen);
+    al_destroy_bitmap(win_screen);
 
     /*Destruir*/
     al_destroy_font(font);
