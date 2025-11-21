@@ -30,6 +30,7 @@ typedef struct character {
     int vy;     //velocidade em y
     int vx;     //velocidade em x
     int fix_camera; //para rolling background
+    int collide;
    
 
     void (*walk)(struct character *actor, char direction);

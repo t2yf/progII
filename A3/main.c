@@ -70,8 +70,14 @@ int update_position(character *actor, element **array_enemie, int map_ajustment)
     }
     
     /*Colisão*/
-    for(int i=0; i<3; i++)
-        character_collide(actor, array_enemie[i], map_ajustment);
+    int collide;
+    for(int i=0; i<3; i++){
+        collide = character_collide(actor, array_enemie[i], map_ajustment);
+        if(collide){
+            actor->collide = 1;
+            break;
+        }
+    }
 
 
     /*Permite que o personagem possa ir para os lados, mesmo que esteja no ar*/
@@ -101,6 +107,11 @@ int main(){
 
     ALLEGRO_FONT* font = al_create_builtin_font();
     must_init(font, "font");
+
+    //Cor da colisão
+    ALLEGRO_COLOR collision;
+    collision = al_map_rgba_f(1, 0, 0, 1);
+
 
 
     /*Inicializar bitmaps*/
@@ -307,7 +318,14 @@ int main(){
                     frameX = (al_get_timer_count(timer)/10) % 5;
                     //Sprite parada é a primeira
                     shadow_souceY = 0;
-                    al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+                    printf("collide %d\n", shadow->collide);
+                    if(shadow->collide == 1){
+                        //TODO para cada sprite fazer isso de pintar de vermelho >> colocar color
+                        al_draw_tinted_scaled_bitmap(shadow_sprite, collision, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+
+                        shadow->collide = 0;
+                    } else
+                        al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
                 } 
                 /*Shadow andar em x e estiver no chão*/
                 if((shadow->position == LEFT || shadow->position == RIGHT) && shadow->ground){
