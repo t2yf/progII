@@ -319,7 +319,6 @@ int main(){
                 }
 
                 /*Nova posição do Shadow*/
-                //printf("DAMAGE COUNTER %d || ",damage_counter );
                 shadow->position = update_position(shadow, array_enemie, map_ajustment);
                 int frameX;
                 
@@ -396,13 +395,11 @@ int main(){
                 if(damage_counter < 0){
                     damage_counter = 0;
                 }
-                //printf(" %d \n", damage_counter);
                 /*HP*/
                 al_draw_scaled_bitmap(hp_emerald_sprites, 0, 0, 18, 15, 1100, 10, 18*3, 15*3, 0);
                 al_draw_textf(font, al_map_rgb(255, 255, 255), 1150, 30, 0,  " X %d", shadow->hp);
                 al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
 
-                
                 
                 /*Conferir se ainda tem vida*/
                 if(shadow->hp <= 0){
