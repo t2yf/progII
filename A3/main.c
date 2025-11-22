@@ -79,7 +79,7 @@ int update_position(character *actor, enemie **array_enemie, int map_ajustment){
             
             if(damage_counter == 0){
                 //[]TODOOOO
-                //actor->hp = actor->hp - array_enemie[i]->damage;
+                actor->hp = actor->hp - array_enemie[i]->damage;
                 damage_counter = 30;
             }
            
@@ -184,10 +184,6 @@ int main(){
     enemie *kero = enemie_create(KERO_INI_POS, 590, 40, 38, 2, RUNNER, 0,154, badniks_sprite);
 
     /*Colocar inimigos num array*/
-    // array_enemie[0] = gamigami->basics;
-    // array_enemie[1] = leon->basics;
-    // array_enemie[2] = rhino->basics;
-
     array_enemie[0] = gamigami;
     array_enemie[1] = leon;
     array_enemie[2] = rhino;
@@ -296,7 +292,6 @@ int main(){
                 int gami_frameX;
                 if(gamigami->basics->x + gamigami->basics->width > map_ajustment && gamigami->basics->x + gamigami->basics->width < map_ajustment + X_SCREEN){
                     //Movimentação patrol (de um lado para outro)
-                    //printf("GAMIGAMI dir: %d |\n", enemie_dir);
                     if((gamigami->basics->x  + gamigami->basics->width) > 900 - map_ajustment || (gamigami->basics->x  + gamigami->basics->width) < 700 - map_ajustment)
                         enemie_dir = -1*enemie_dir;
                     enemie_move(gamigami, enemie_dir, 2, rolling);
@@ -305,11 +300,9 @@ int main(){
                 }
 
                 /*Pierrot - Patrol*/
-                //[TODO] consertar
                 int pier_frameX;
                 if(pierrot->basics->x + pierrot->basics->width > map_ajustment && pierrot->basics->x + pierrot->basics->width < map_ajustment + X_SCREEN){
-                   // printf("PIER dir: %d || X: %d\n", pier_enemie_dir, pierrot->basics->x);
-                    if((pierrot->basics->x + pierrot->basics->width) > 3200 - map_ajustment || (pierrot->basics->x) < 3000 - map_ajustment)
+                    if((pierrot->basics->x + pierrot->basics->width) > map_ajustment + X_SCREEN - 20 || (pierrot->basics->x) < map_ajustment + 20)
                         pier_enemie_dir = -1*pier_enemie_dir;
 
                     enemie_move(pierrot, pier_enemie_dir, 2, rolling);
@@ -366,7 +359,6 @@ int main(){
                     
                 }
 
-                //[TODO] collide não funciona
                 /*Plotar item de vida*/
                 if(red_emerald_visible && ( red_emerald_x > map_ajustment && red_emerald_x + signpost_size < map_ajustment + X_SCREEN)){
                     al_draw_scaled_bitmap(hp_emerald_sprites, 18, 15, 15, 15, red_emerald_x - map_ajustment, GROUND, 15*2, 15*2, 0);
@@ -375,7 +367,7 @@ int main(){
                     int red_emerald_collide = simple_collide(shadow->basics->x, shadow->basics->y, shadow->basics->x + shadow->basics->width*SPRITE_MULT_FACTOR, shadow->basics->y + shadow->basics->height*SPRITE_MULT_FACTOR, red_emerald_x - map_ajustment, GROUND, red_emerald_x + 15 - map_ajustment, GROUND + 15);
                     if(red_emerald_collide){
                         red_emerald_visible = 0;
-                        shadow->hp += 5;
+                        shadow->hp += 3;
                     }
                 }
 
