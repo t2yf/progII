@@ -140,6 +140,8 @@ int main(){
     //Itens - hp e esmeraldas
     ALLEGRO_BITMAP *hp_emerald_sprites = al_load_bitmap("assets/hp_emeralds-spritesheets.png");
     must_init(hp_emerald_sprites, "hp_emerals_sprite");
+    int red_emerald_x = 3500;
+    int red_emerald_visible = 1;
 
     //Sprites de tela
     ALLEGRO_BITMAP *menu_screen = al_load_bitmap("assets/screen_menu.png");
@@ -303,9 +305,10 @@ int main(){
                 }
 
                 /*Pierrot - Patrol*/
+                //[TODO] consertar
                 int pier_frameX;
                 if(pierrot->basics->x + pierrot->basics->width > map_ajustment && pierrot->basics->x + pierrot->basics->width < map_ajustment + X_SCREEN){
-                    printf("PIER dir: %d || X: %d\n", pier_enemie_dir, pierrot->basics->x);
+                   // printf("PIER dir: %d || X: %d\n", pier_enemie_dir, pierrot->basics->x);
                     if((pierrot->basics->x + pierrot->basics->width) > 3200 - map_ajustment || (pierrot->basics->x) < 3000 - map_ajustment)
                         pier_enemie_dir = -1*pier_enemie_dir;
 
@@ -363,8 +366,21 @@ int main(){
                     
                 }
 
-                //[TODO]
+                //[TODO] collide não funciona
                 /*Plotar item de vida*/
+                if(red_emerald_visible && ( red_emerald_x > map_ajustment && red_emerald_x + signpost_size < map_ajustment + X_SCREEN)){
+                    al_draw_scaled_bitmap(hp_emerald_sprites, 18, 15, 15, 15, red_emerald_x - map_ajustment, GROUND, 15*2, 15*2, 0);
+
+
+                    int red_emerald_collide = simple_collide(shadow->basics->x, shadow->basics->y, shadow->basics->x + shadow->basics->width*SPRITE_MULT_FACTOR, shadow->basics->y + shadow->basics->height*SPRITE_MULT_FACTOR, red_emerald_x - map_ajustment, GROUND, red_emerald_x + 15 - map_ajustment, GROUND + 15);
+                    if(red_emerald_collide){
+                        red_emerald_visible = 0;
+                        shadow->hp += 5;
+                    }
+                }
+
+                if(!red_emerald_visible)
+                    al_draw_scaled_bitmap(hp_emerald_sprites, 18, 13, 15, 15, 1050, 15, 15*2, 15*2, 0);
 
                 /*Nova posição do Shadow*/
                 shadow->position = update_position(shadow, array_enemie, map_ajustment);
