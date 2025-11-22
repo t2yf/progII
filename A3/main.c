@@ -279,7 +279,7 @@ int main(){
                 /*GamiGami - Patrol*/
                 //Cuidar para a sprite não seguir o background
                 int gami_frameX;
-                if(gamigami->basics->x > map_ajustment && gamigami->basics->x + gamigami->basics->width < map_ajustment + X_SCREEN){
+                if(gamigami->basics->x + gamigami->basics->width > map_ajustment && gamigami->basics->x + gamigami->basics->width < map_ajustment + X_SCREEN){
                     //Movimentação patrol (de um lado para outro)
                     if((gamigami->basics->x  + gamigami->basics->width) > 900 - map_ajustment || (gamigami->basics->x  + gamigami->basics->width) < 700 - map_ajustment)
                         enemie_dir = -1*enemie_dir;
@@ -294,7 +294,7 @@ int main(){
                 int rhino_frameX;
                 int show_rhino = enemie_move(rhino, 0, 2, rolling);
                 if(show_rhino != -1){
-                    if(rhino->basics->x > map_ajustment && rhino->basics->x + rhino->basics->width < map_ajustment + X_SCREEN){
+                    if(rhino->basics->x + rhino->basics->width > map_ajustment && rhino->basics->x + rhino->basics->width < map_ajustment + X_SCREEN){
                         rhino_frameX = (al_get_timer_count(timer)/3) %3;
                         al_draw_scaled_bitmap(badniks_sprite, rhino->sourceX + (rhino->basics->width*rhino_frameX), rhino->sourceY, rhino->basics->width, rhino->basics->height, rhino->basics->x-map_ajustment, rhino->basics->y, rhino->basics->width*2, rhino->basics->height*2, 0);
                     }
@@ -306,7 +306,7 @@ int main(){
                 
                 /*Leon - Idle*/
                 int leon_frameX;
-                if(leon->basics->x > map_ajustment && leon->basics->x + leon->basics->width  < map_ajustment + X_SCREEN){
+                if(leon->basics->x + leon->basics->width > map_ajustment && leon->basics->x + leon->basics->width  < map_ajustment + X_SCREEN){
                     //printf("Leon X: %d\n", leon->basics->x);
                     leon_frameX = (al_get_timer_count(timer)) %6;
                     al_draw_scaled_bitmap(badniks_sprite, leon->sourceX + (leon->basics->width*leon_frameX), leon->sourceY, leon->basics->width, leon->basics->height, leon->basics->x-map_ajustment, leon->basics->y, leon->basics->width*2, leon->basics->height*2, 0);
@@ -399,22 +399,20 @@ int main(){
                 //printf(" %d \n", damage_counter);
                 /*HP*/
                 al_draw_scaled_bitmap(hp_emerald_sprites, 0, 0, 18, 15, 1100, 10, 18*3, 15*3, 0);
-                // al_draw_scaled_bitmap(signpost, 0, 0, signpost_size, signpost_size, 1100, 50, signpost_size*1, signpost_size*1, 0);
                 al_draw_textf(font, al_map_rgb(255, 255, 255), 1150, 30, 0,  " X %d", shadow->hp);
                 al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
 
                 
-                int signpost_collide = simple_collide(shadow->basics->x, shadow->basics->y, shadow->basics->x + shadow->basics->width*SPRITE_MULT_FACTOR, shadow->basics->y + shadow->basics->height*SPRITE_MULT_FACTOR , signpost_x - map_ajustment, GROUND, signpost_x + signpost_size - map_ajustment, GROUND + signpost_size);
-                    if(signpost_collide){
-                        //("win\n");
-                        tela = WIN;
-                        //break;
-                }
                 
                 /*Conferir se ainda tem vida*/
                 if(shadow->hp <= 0){
-
                     tela = LOSE;    
+                }
+
+                /*Se encostar na plaquinha, vence*/
+                int signpost_collide = simple_collide(shadow->basics->x, shadow->basics->y, shadow->basics->x + shadow->basics->width*SPRITE_MULT_FACTOR, shadow->basics->y + shadow->basics->height*SPRITE_MULT_FACTOR , signpost_x + signpost_size - map_ajustment, GROUND, signpost_x + signpost_size + 50 - map_ajustment, GROUND + signpost_size);
+                    if(signpost_collide){
+                        tela = WIN;
                 }
 
                 
