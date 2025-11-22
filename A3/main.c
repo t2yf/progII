@@ -363,6 +363,9 @@ int main(){
                     
                 }
 
+                //[TODO]
+                /*Plotar item de vida*/
+
                 /*Nova posição do Shadow*/
                 shadow->position = update_position(shadow, array_enemie, map_ajustment);
                 int frameX;
