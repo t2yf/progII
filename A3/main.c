@@ -27,7 +27,7 @@
 #define LOSE 3
 #define IN_GAME 4
 
-
+int damage_counter = 0;
 int tela = MENU;
 //vetor de inimigos -> para colisão
 element *array_enemie[NUM_ENEMIES];
@@ -75,7 +75,12 @@ int update_position(character *actor, element **array_enemie, int map_ajustment)
         collide = character_collide(actor, array_enemie[i], map_ajustment);
         if(collide){
             actor->collide = 1;
-            break;
+            
+            if(damage_counter == 0){
+                actor->hp --;
+                damage_counter = 30;
+            }
+           
         }
     }
 
@@ -109,8 +114,8 @@ int main(){
     must_init(font, "font");
 
     //Cor da colisão
-    ALLEGRO_COLOR collision;
-    collision = al_map_rgba_f(1, 0, 0, 1);
+    ALLEGRO_COLOR collision_color;
+    collision_color = al_map_rgba_f(1, 0, 0, 1);
 
 
 
@@ -302,7 +307,7 @@ int main(){
                 }
 
                 /*Nova posição do Shadow*/
-                //printf("shadow X: %d || gamigami X %d\n", shadow->basics->x, array_enemie[0]->x);
+                //printf("DAMAGE COUNTER %d || ",damage_counter );
                 shadow->position = update_position(shadow, array_enemie, map_ajustment);
                 int frameX;
                 
@@ -318,12 +323,11 @@ int main(){
                     frameX = (al_get_timer_count(timer)/10) % 5;
                     //Sprite parada é a primeira
                     shadow_souceY = 0;
-                    printf("collide %d\n", shadow->collide);
-                    if(shadow->collide == 1){
-                        //TODO para cada sprite fazer isso de pintar de vermelho >> colocar color
-                        al_draw_tinted_scaled_bitmap(shadow_sprite, collision, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
 
-                        shadow->collide = 0;
+                    if(shadow->collide == 1){
+                        al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+
+                        //shadow->collide = 0;
                     } else
                         al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
                 } 
@@ -331,18 +335,39 @@ int main(){
                 if((shadow->position == LEFT || shadow->position == RIGHT) && shadow->ground){
                     frameX = (al_get_timer_count(timer)/3) % 14;
                     shadow_souceY = 30;
-                    al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+
+                    if(shadow->collide == 1){
+                        al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+
+                        //shadow->collide = 0;
+                    } else
+                        al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
                 }
                 /*Shadow no ar*/
                 if(shadow->position == UP || !shadow->ground){
                     frameX = (al_get_timer_count(timer)/6) % 4;
+                    //shadow_sourceX =22;
                     shadow_souceY = 60;
-                    al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+
+                    if(shadow->collide == 1){
+                        al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX + (shadow_width*frameX)
+                        , shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir); //
+                        //shadow->collide = 0;
+                    }else
+                        al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+
+                    //shadow_sourceX = 0;
                 }
                 /*Shadow agachado*/
                 if(shadow->position == DOWN){
                     shadow_souceY = 120;
-                    al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+
+                    if(shadow->collide == 1){
+                        al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+
+                        //shadow->collide = 0;
+                    } else
+                        al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
                 }
                 /*Shadow rastejando*/
                 //[TODO]
@@ -351,12 +376,24 @@ int main(){
                 
 
                 /*Colisão*/
-
+                if(shadow->collide == 1){
+                    shadow->collide = 0;
+                    
+                }
+                damage_counter --;
+                if(damage_counter < 0){
+                    damage_counter = 0;
+                }
+                //printf(" %d \n", damage_counter);
                 /*HP*/
                 al_draw_scaled_bitmap(hp_emerald_sprites, 0, 0, 18, 15, 1100, 10, 18*3, 15*3, 0);
                 al_draw_textf(font, al_map_rgb(255, 255, 255), 1150, 30, 0,  " X %d", shadow->hp);
                 al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
                 
+                /*Conferir se ainda tem vida*/
+                if(shadow->hp <= 0){
+                    tela = LOSE;    
+                }
 
                 
             } else if (tela == LOSE){

@@ -32,7 +32,15 @@ int update_runner_enemie(enemie *badnik, int vel_relative){
         return -1;
     }
 
-    badnik->basics->x += badnik->vx - vel_relative;
+    //printf("vel relative:%d\n", vel_relative);
+    int ajust_vel_relative = vel_relative;
+    if(vel_relative == 30){
+        ajust_vel_relative = 10;
+    } else if (vel_relative == -30){
+        ajust_vel_relative = -10;
+    }
+
+    badnik->basics->x += badnik->vx - ajust_vel_relative;
     return 1;
 }
 //ficar andando de um lado pra outro
