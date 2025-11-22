@@ -78,7 +78,6 @@ int update_position(character *actor, enemie **array_enemie, int map_ajustment){
             actor->collide = 1;
             
             if(damage_counter == 0){
-                //[]TODOOOO
                 actor->hp = actor->hp - array_enemie[i]->damage;
                 damage_counter = 30;
             }
@@ -177,11 +176,11 @@ int main(){
     enemie *gamigami = enemie_create(700, 580, 47, 41, 2, PATROL, 0, 0, badniks_sprite); //+30
     enemie *pierrot = enemie_create(3000, 550, 48, 48, 2, PATROL, 0, 74, badniks_sprite);
     //Idle
-    enemie *leon = enemie_create(1400, 610, 63, 23, 1,  IDLE, 0, 192, badniks_sprite); //+60
+    enemie *leon = enemie_create(3600, 610, 63, 23, 1,  IDLE, 0, 192, badniks_sprite); //+60
     enemie *mogu = enemie_create(5100, 590, 31, 33, 1, IDLE, 0, 41, badniks_sprite);
     //Runners
     enemie *rhino = enemie_create(RHINO_INI_POS, 590, 39, 32, 3,RUNNER, 0, 122, badniks_sprite); //+40
-    enemie *kero = enemie_create(KERO_INI_POS, 590, 40, 38, 2, RUNNER, 0,154, badniks_sprite);
+    enemie *kero = enemie_create(KERO_INI_POS, 590, 40, 38, 3, RUNNER, 0,154, badniks_sprite);
 
     /*Colocar inimigos num array*/
     array_enemie[0] = gamigami;
@@ -191,7 +190,6 @@ int main(){
     array_enemie[4] = mogu;
     array_enemie[5] = kero;
    
-
 
     /*Atributos para plotar personagens*/
     float shadow_width = shadow->basics->width;
