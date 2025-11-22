@@ -18,6 +18,7 @@
 #define Y_SCREEN     720
 #define GROUND       550
 #define RHINO_INI_POS 6400
+#define KERO_INI_POS 4000
 #define NUM_ENEMIES     6
 
 
@@ -30,9 +31,9 @@
 int damage_counter = 0;
 int tela = MENU;
 //vetor de inimigos -> para colisão
-element *array_enemie[NUM_ENEMIES];
+enemie *array_enemie[NUM_ENEMIES];
 
-int update_position(character *actor, element **array_enemie, int map_ajustment){
+int update_position(character *actor, enemie **array_enemie, int map_ajustment){
     int retorno = 0;
     /*Shadow no ar ou agachado*/
     if(!actor->ground){
@@ -71,13 +72,14 @@ int update_position(character *actor, element **array_enemie, int map_ajustment)
     
     /*Colisão*/
     int collide;
-    for(int i=0; i<3; i++){
-        collide = character_collide(actor, array_enemie[i], map_ajustment);
+    for(int i=0; i<NUM_ENEMIES; i++){
+        collide = character_collide(actor, array_enemie[i]->basics, map_ajustment);
         if(collide){
             actor->collide = 1;
             
             if(damage_counter == 0){
-                actor->hp --;
+                //[]TODOOOO
+                //actor->hp = actor->hp - array_enemie[i]->damage;
                 damage_counter = 30;
             }
            
@@ -171,16 +173,26 @@ int main(){
     /*Criar inimigos*/
     //Patrols
     enemie *gamigami = enemie_create(700, 580, 47, 41, 2, PATROL, 0, 0, badniks_sprite); //+30
+    enemie *pierrot = enemie_create(3000, 550, 48, 48, 2, PATROL, 0, 74, badniks_sprite);
     //Idle
     enemie *leon = enemie_create(1400, 610, 63, 23, 1,  IDLE, 0, 192, badniks_sprite); //+60
+    enemie *mogu = enemie_create(5100, 590, 31, 33, 1, IDLE, 0, 41, badniks_sprite);
     //Runners
-    enemie *rhino = enemie_create(RHINO_INI_POS, 590, 39, 32, 2,RUNNER, 0, 122, badniks_sprite); //+40
+    enemie *rhino = enemie_create(RHINO_INI_POS, 590, 39, 32, 3,RUNNER, 0, 122, badniks_sprite); //+40
+    enemie *kero = enemie_create(KERO_INI_POS, 590, 40, 38, 2, RUNNER, 0,154, badniks_sprite);
 
     /*Colocar inimigos num array*/
-    array_enemie[0] = gamigami->basics;
-    array_enemie[1] = leon->basics;
-    array_enemie[2] = rhino->basics;
-    //[TODO] colocar o resto dos inimigos
+    // array_enemie[0] = gamigami->basics;
+    // array_enemie[1] = leon->basics;
+    // array_enemie[2] = rhino->basics;
+
+    array_enemie[0] = gamigami;
+    array_enemie[1] = leon;
+    array_enemie[2] = rhino;
+    array_enemie[3] = pierrot;
+    array_enemie[4] = mogu;
+    array_enemie[5] = kero;
+   
 
 
     /*Atributos para plotar personagens*/
@@ -195,6 +207,7 @@ int main(){
 
     int shadow_dir = 0;
     int enemie_dir = 1;
+    int pier_enemie_dir = 1;
 
 
     bool done = false;
@@ -281,6 +294,7 @@ int main(){
                 int gami_frameX;
                 if(gamigami->basics->x + gamigami->basics->width > map_ajustment && gamigami->basics->x + gamigami->basics->width < map_ajustment + X_SCREEN){
                     //Movimentação patrol (de um lado para outro)
+                    //printf("GAMIGAMI dir: %d |\n", enemie_dir);
                     if((gamigami->basics->x  + gamigami->basics->width) > 900 - map_ajustment || (gamigami->basics->x  + gamigami->basics->width) < 700 - map_ajustment)
                         enemie_dir = -1*enemie_dir;
                     enemie_move(gamigami, enemie_dir, 2, rolling);
@@ -288,7 +302,17 @@ int main(){
                     al_draw_scaled_bitmap(badniks_sprite, gamigami->sourceX + (gamigami->basics->width*gami_frameX), gamigami->sourceY, gamigami->basics->width, gamigami->basics->height, gamigami->basics->x-map_ajustment, gamigami->basics->y, gamigami->basics->width*2, gamigami->basics->height*2, 0);
                 }
 
-                /*[TODO] pierrot eh o mesmo do gamigami, só que muda o flip, faã isso com o enemie_dir*/
+                /*Pierrot - Patrol*/
+                int pier_frameX;
+                if(pierrot->basics->x + pierrot->basics->width > map_ajustment && pierrot->basics->x + pierrot->basics->width < map_ajustment + X_SCREEN){
+                    printf("PIER dir: %d || X: %d\n", pier_enemie_dir, pierrot->basics->x);
+                    if((pierrot->basics->x + pierrot->basics->width) > 3200 - map_ajustment || (pierrot->basics->x) < 3000 - map_ajustment)
+                        pier_enemie_dir = -1*pier_enemie_dir;
+
+                    enemie_move(pierrot, pier_enemie_dir, 2, rolling);
+                    pier_frameX = (al_get_timer_count(timer)/10) % 4;
+                    al_draw_scaled_bitmap(badniks_sprite, pierrot->sourceX + (pierrot->basics->width*pier_frameX), pierrot->sourceY, pierrot->basics->width, pierrot->basics->height, pierrot->basics->x - map_ajustment, pierrot->basics->y, pierrot->basics->width*2, pierrot->basics->height*2, 0);
+                }
 
                 /*Rhino - Runner*/
                 int rhino_frameX;
@@ -303,6 +327,18 @@ int main(){
                     rhino->basics->x = RHINO_INI_POS;
                 }
                 
+                /*Kero - RUNNER*/
+                int kero_frameX;
+                int show_kero = enemie_move(kero, 0, 2, rolling);
+                if(show_kero != -1){
+                    if(kero->basics->x + kero->basics->width > map_ajustment && kero->basics->x + kero->basics->width < map_ajustment + X_SCREEN){
+                        kero_frameX = (al_get_timer_count(timer)/3) %5;
+                        al_draw_scaled_bitmap(badniks_sprite, kero->sourceX + (kero->basics->width*kero_frameX), kero->sourceY, kero->basics->width, kero->basics->height, kero->basics->x - map_ajustment, kero->basics->y, kero->basics->width*2, kero->basics->height*2, 0);
+                    }
+                } else{
+                    kero->basics->x = KERO_INI_POS;
+                }
+               
                 
                 /*Leon - Idle*/
                 int leon_frameX;
@@ -311,6 +347,15 @@ int main(){
                     leon_frameX = (al_get_timer_count(timer)) %6;
                     al_draw_scaled_bitmap(badniks_sprite, leon->sourceX + (leon->basics->width*leon_frameX), leon->sourceY, leon->basics->width, leon->basics->height, leon->basics->x-map_ajustment, leon->basics->y, leon->basics->width*2, leon->basics->height*2, 0);
                 }
+
+                /*Mogu - Idle*/
+                int mogu_frameX;
+                if(mogu->basics->x + mogu->basics->width > map_ajustment && mogu->basics->x + mogu->basics->width < map_ajustment + X_SCREEN){
+                    mogu_frameX = (al_get_timer_count(timer)/3) %7;
+                    al_draw_scaled_bitmap(badniks_sprite, mogu->sourceX + (mogu->basics->width*mogu_frameX), mogu->sourceY, mogu->basics->width, mogu->basics->height, mogu->basics->x - map_ajustment, mogu->basics->y, mogu->basics->width*2, mogu->basics->height*2, 0);
+                }
+
+             
 
                 /*Plotar Itens*/
                 if(signpost_x > map_ajustment && signpost_x + signpost_size < map_ajustment + X_SCREEN){
