@@ -135,7 +135,7 @@ int main(){
     ALLEGRO_BITMAP *badniks_sprite = al_load_bitmap("assets/badniks-spritesheets.png");
     must_init(badniks_sprite, "badniks_sprite");
 
-    //Elementos - hp e esmeraldas
+    //Itens - hp e esmeraldas
     ALLEGRO_BITMAP *hp_emerald_sprites = al_load_bitmap("assets/hp_emeralds-spritesheets.png");
     must_init(hp_emerald_sprites, "hp_emerals_sprite");
 
@@ -152,6 +152,12 @@ int main(){
     ALLEGRO_BITMAP *lose_screen = al_load_bitmap("assets/screen_lose.png");
     must_init(lose_screen, "lose");
 
+    //Itens - signpost
+    ALLEGRO_BITMAP *signpost = al_load_bitmap("assets/signpost_sprite.png");
+    must_init(signpost, "signpost");
+    int signpost_x = 6100;
+    int signpost_size = 50;
+
 
     /*Primeiros eventos*/
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -163,8 +169,6 @@ int main(){
     character *shadow = character_create(10, GROUND, 22, 30, shadow_sprite);
 
     /*Criar inimigos*/
-    //TODO problemas com o y do inimigo, por causa do chão dele
-    //TODO problemas com o runner, fica puxando o shadow
     //Patrols
     enemie *gamigami = enemie_create(700, 580, 47, 41, 2, PATROL, 0, 0, badniks_sprite); //+30
     //Idle
@@ -265,9 +269,11 @@ int main(){
                     map_ajustment = MAX_MAP_BOUNDARIE_X - X_SCREEN;
                 }
 
+
                 /*Plotar background*/
                 al_reparent_bitmap(sub_background, all_background, map_ajustment, 0, X_SCREEN, Y_SCREEN);
-                al_draw_bitmap(sub_background, 0, 0, 0);
+                al_draw_bitmap(sub_background, 0, 0, 0);                
+                
 
                 /*Plotar inimigos*/
                 /*GamiGami - Patrol*/
@@ -300,10 +306,16 @@ int main(){
                 
                 /*Leon - Idle*/
                 int leon_frameX;
-                if(leon->basics->x > map_ajustment && leon->basics->x + leon->basics->width < map_ajustment + X_SCREEN){
+                if(leon->basics->x > map_ajustment && leon->basics->x + leon->basics->width  < map_ajustment + X_SCREEN){
                     //printf("Leon X: %d\n", leon->basics->x);
                     leon_frameX = (al_get_timer_count(timer)) %6;
                     al_draw_scaled_bitmap(badniks_sprite, leon->sourceX + (leon->basics->width*leon_frameX), leon->sourceY, leon->basics->width, leon->basics->height, leon->basics->x-map_ajustment, leon->basics->y, leon->basics->width*2, leon->basics->height*2, 0);
+                }
+
+                /*Plotar Itens*/
+                if(signpost_x > map_ajustment && signpost_x + signpost_size < map_ajustment + X_SCREEN){
+                    al_draw_scaled_bitmap(signpost, 0, 0, signpost_size, signpost_size, signpost_x - map_ajustment, GROUND, signpost_size*2, signpost_size*2, 0);
+                    
                 }
 
                 /*Nova posição do Shadow*/
@@ -387,11 +399,21 @@ int main(){
                 //printf(" %d \n", damage_counter);
                 /*HP*/
                 al_draw_scaled_bitmap(hp_emerald_sprites, 0, 0, 18, 15, 1100, 10, 18*3, 15*3, 0);
+                // al_draw_scaled_bitmap(signpost, 0, 0, signpost_size, signpost_size, 1100, 50, signpost_size*1, signpost_size*1, 0);
                 al_draw_textf(font, al_map_rgb(255, 255, 255), 1150, 30, 0,  " X %d", shadow->hp);
                 al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
+
+                
+                int signpost_collide = simple_collide(shadow->basics->x, shadow->basics->y, shadow->basics->x + shadow->basics->width*SPRITE_MULT_FACTOR, shadow->basics->y + shadow->basics->height*SPRITE_MULT_FACTOR , signpost_x - map_ajustment, GROUND, signpost_x + signpost_size - map_ajustment, GROUND + signpost_size);
+                    if(signpost_collide){
+                        //("win\n");
+                        tela = WIN;
+                        //break;
+                }
                 
                 /*Conferir se ainda tem vida*/
                 if(shadow->hp <= 0){
+
                     tela = LOSE;    
                 }
 
