@@ -78,7 +78,7 @@ int update_position(character *actor, enemie **array_enemie, int map_ajustment){
             actor->collide = 1;
             
             if(damage_counter == 0){
-                //actor->hp = actor->hp - array_enemie[i]->damage;
+                actor->hp = actor->hp - array_enemie[i]->damage;
                 damage_counter = 30;
             }
            
@@ -161,6 +161,15 @@ int main(){
     must_init(signpost, "signpost");
     int signpost_x = 6100;
     int signpost_size = 50;
+
+    //Itens - spikes
+    ALLEGRO_BITMAP *spikes = al_load_bitmap("assets/spike_sprite.png");
+    must_init(spikes, "spikes");
+    int spikes_x = 4450;
+    int spikes_y = 100;
+    int spikes_width = 198;
+    int spikes_height = 500;
+    
 
 
     /*Primeiros eventos*/
@@ -357,7 +366,7 @@ int main(){
                 }
 
 
-                /*Plotar Itens*/
+                /*Plotar plaquinha*/
                 if(signpost_x > map_ajustment && signpost_x + signpost_size < map_ajustment + X_SCREEN){
                     al_draw_scaled_bitmap(signpost, 0, 0, signpost_size, signpost_size, signpost_x - map_ajustment, GROUND, signpost_size*2, signpost_size*2, 0);
                     
@@ -378,9 +387,41 @@ int main(){
                 if(!red_emerald_visible)
                     al_draw_scaled_bitmap(hp_emerald_sprites, 18, 13, 15, 15, 1050, 15, 15*2, 15*2, 0);
 
+
+                /*Plotar spikes*/
+                //[TODO]
+                if(spikes_x + spikes_width > map_ajustment && spikes_x + spikes_width < map_ajustment + X_SCREEN){
+                    al_draw_scaled_bitmap(spikes, 0, 0, spikes_width, spikes_height, spikes_x - map_ajustment, spikes_y, spikes_width, spikes_height, 0);
+
+                    
+                }
+
                 /*Nova posição do Shadow*/
                 shadow->position = update_position(shadow, array_enemie, map_ajustment);
                 int frameX;
+
+
+                //Colisão
+                int spike_collide = four_sides_collide(shadow->basics->x, shadow->basics->y, shadow->basics->x + shadow->basics->width*SPRITE_MULT_FACTOR, shadow->basics->y + shadow->basics->height*SPRITE_MULT_FACTOR, spikes_x - map_ajustment, spikes_y, spikes_x + spikes_width - map_ajustment, spikes_y + spikes_height);
+
+                    
+                if(spike_collide != 0){
+                    //Se tiver agachado não acontece nada
+                    if(!shadow->crounch){
+                        //Se colidiu, voltar
+                        if(spike_collide == 1){
+                            shadow->basics->x = spikes_x  - map_ajustment - shadow->basics->width - 50;
+                        } else if(spike_collide == 2){
+                            shadow->basics->x = spikes_x + spikes_width - map_ajustment ;
+                        }
+                        shadow->collide = 1; 
+                        //shadow->hp -= 1;
+                        if(damage_counter == 0){
+                            shadow->hp -=1;
+                            damage_counter = 30;
+                        }
+                    }        
+                }
                 
                 if (shadow->position == LEFT){
                     shadow_dir = ALLEGRO_FLIP_HORIZONTAL;
@@ -419,9 +460,9 @@ int main(){
                     }
                     
                     if(shadow->collide == 1){
-                        al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height - 5, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+                        al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height - 5, shadow->basics->x, shadow->basics->y + 40, shadow_width*2.8, shadow_height*2.8, shadow_dir);
                     } else
-                        al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height -5, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+                        al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height -5, shadow->basics->x, shadow->basics->y + 40, shadow_width*2.8, shadow_height*2.8, shadow_dir);
 
                     shadow_sourceX = 0;
                 }
@@ -477,6 +518,8 @@ int main(){
                 
                 /*Barra de stamina*/
                 al_draw_filled_rectangle(10, 20, shadow->stamina + 10, 40, collision_color);
+
+                //al_draw_filled_rectangle(500, 100, 600, 600, collision_color);
                 
 
                 /*Colisão*/
