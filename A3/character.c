@@ -33,6 +33,8 @@ character *character_create(int x, int y, int width, int height, ALLEGRO_BITMAP 
     new_charac->ground = 1;
     new_charac->fix_camera = 0;
     new_charac->collide = 0;
+    new_charac->crounch = 0;
+    new_charac->stamina = STAMINA;
 
     new_charac->walk = character_move_x;
     new_charac->jump = character_move_y;

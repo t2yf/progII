@@ -50,7 +50,7 @@ int update_position(character *actor, enemie **array_enemie, int map_ajustment){
         
     } else if(actor->control->down ){
         //[TODO] fazer ele andar abaixado dps
-        return DOWN;
+        retorno = DOWN;
     }
     /*Shadow andando para a direita ou esquerda*/
     if(actor->control->left){
@@ -78,7 +78,7 @@ int update_position(character *actor, enemie **array_enemie, int map_ajustment){
             actor->collide = 1;
             
             if(damage_counter == 0){
-                actor->hp = actor->hp - array_enemie[i]->damage;
+                //actor->hp = actor->hp - array_enemie[i]->damage;
                 damage_counter = 30;
             }
            
@@ -250,6 +250,12 @@ int main(){
             }																														
 			if (event.keyboard.keycode == ALLEGRO_KEY_S) {
                 joystick_down(shadow->control);
+                if(shadow->stamina == STAMINA){
+                    shadow->crounch = 1;
+                } 
+                if(event.type == ALLEGRO_EVENT_KEY_UP){
+                    shadow->crounch = 0;
+                }
                
             }			
             /*Evitar ficar infinitamente no rolling background*/
@@ -389,6 +395,10 @@ int main(){
                     //Sprite parada é a primeira
                     shadow_souceY = 0;
 
+                    //Só recupera stamina quando parado
+                    if(shadow->stamina < STAMINA)
+                        shadow->stamina ++;
+
                     if(shadow->collide == 1){
                         al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
 
@@ -397,7 +407,25 @@ int main(){
                         al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
                 } 
                 /*Shadow andar em x e estiver no chão*/
-                if((shadow->position == LEFT || shadow->position == RIGHT) && shadow->ground){
+                if((shadow->position == LEFT || shadow->position == RIGHT) && shadow->crounch && shadow->ground){
+                    frameX = (al_get_timer_count(timer)/3) % 3;
+                    shadow_souceY = 155;
+                    shadow_sourceX = 88;
+
+                    //Andar abaixado gasta stamina
+                    shadow->stamina --;
+                    if(shadow->stamina == 0){
+                        shadow->crounch = !shadow->crounch;
+                    }
+                    
+                    if(shadow->collide == 1){
+                        al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height - 5, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+                    } else
+                        al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height -5, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
+
+                    shadow_sourceX = 0;
+                }
+                else if((shadow->position == LEFT || shadow->position == RIGHT) && shadow->ground){
                     frameX = (al_get_timer_count(timer)/3) % 14;
                     shadow_souceY = 30;
 
@@ -407,11 +435,11 @@ int main(){
                         //shadow->collide = 0;
                     } else
                         al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
-                }
+                } 
                 /*Shadow no ar*/
                 if(shadow->position == UP || !shadow->ground){
                     frameX = (al_get_timer_count(timer)/6) % 4;
-                    //shadow_sourceX =22;
+                    
                     shadow_souceY = 60;
 
                     if(shadow->collide == 1){
@@ -421,7 +449,7 @@ int main(){
                     }else
                         al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
 
-                    //shadow_sourceX = 0;
+                    
                 }
                 /*Shadow agachado*/
                 if(shadow->position == DOWN){

@@ -16,7 +16,8 @@
 #define RIGHT   2
 #define UP      3
 #define DOWN    4
-#define GRAVITY 5;
+#define STAMINA 180
+#define GRAVITY 5
 
 
 typedef struct character {
@@ -31,14 +32,13 @@ typedef struct character {
     int vx;     //velocidade em x
     int fix_camera; //para rolling background
     int collide;
+    int crounch;
+    int stamina;
    
 
     void (*walk)(struct character *actor, char direction);
     void (*jump)(struct character *actor, char direction);
 
-    //void crouch
-    //void fall
-    //void idle
 
 
 } character;

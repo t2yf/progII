@@ -8,8 +8,6 @@
 //compara as extremidades e retorna 1 em caso de colisao e 0 caso contrario
 int simple_collide(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2);
 
-
-
 int complex_collide(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2);
 
 #endif
