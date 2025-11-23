@@ -85,7 +85,6 @@ int update_position(character *actor, enemie **array_enemie, int map_ajustment){
         }
     }
 
-
     /*Permite que o personagem possa ir para os lados, mesmo que esteja no ar*/
     return retorno;
 }
