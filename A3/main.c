@@ -97,6 +97,7 @@ int main(){
     must_init(al_init(), "allegro");
     must_init(al_install_keyboard(), "keyboard");
     must_init(al_init_image_addon(), "image addon");
+    must_init(al_init_primitives_addon(), "primitives");
 
     ALLEGRO_TIMER* timer = al_create_timer(1.0 / 30.0); //30 FPS
     must_init(timer, "timer");
@@ -355,7 +356,6 @@ int main(){
                     al_draw_scaled_bitmap(badniks_sprite, mogu->sourceX + (mogu->basics->width*mogu_frameX), mogu->sourceY, mogu->basics->width, mogu->basics->height, mogu->basics->x - map_ajustment, mogu->basics->y, mogu->basics->width*2, mogu->basics->height*2, 0);
                 }
 
-             
 
                 /*Plotar Itens*/
                 if(signpost_x > map_ajustment && signpost_x + signpost_size < map_ajustment + X_SCREEN){
@@ -395,7 +395,7 @@ int main(){
                     //Sprite parada é a primeira
                     shadow_souceY = 0;
 
-                    //Só recupera stamina quando parado
+                    //recupera stamina
                     if(shadow->stamina < STAMINA)
                         shadow->stamina ++;
 
@@ -406,7 +406,7 @@ int main(){
                     } else
                         al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
                 } 
-                /*Shadow andar em x e estiver no chão*/
+                /*Shadow andar em x e estiver no chão*/ /*Shadow rastejando*/
                 if((shadow->position == LEFT || shadow->position == RIGHT) && shadow->crounch && shadow->ground){
                     frameX = (al_get_timer_count(timer)/3) % 3;
                     shadow_souceY = 155;
@@ -429,6 +429,11 @@ int main(){
                     frameX = (al_get_timer_count(timer)/3) % 14;
                     shadow_souceY = 30;
 
+                    //recupera stamina
+                    if(shadow->stamina < STAMINA)
+                        shadow->stamina ++;
+
+
                     if(shadow->collide == 1){
                         al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
 
@@ -441,6 +446,9 @@ int main(){
                     frameX = (al_get_timer_count(timer)/6) % 4;
                     
                     shadow_souceY = 60;
+                    //recupera stamina
+                    if(shadow->stamina < STAMINA)
+                        shadow->stamina ++;
 
                     if(shadow->collide == 1){
                         al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX + (shadow_width*frameX)
@@ -454,6 +462,9 @@ int main(){
                 /*Shadow agachado*/
                 if(shadow->position == DOWN){
                     shadow_souceY = 120;
+                    //recupera stamina
+                    if(shadow->stamina < STAMINA)
+                        shadow->stamina ++;
 
                     if(shadow->collide == 1){
                         al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
@@ -462,10 +473,10 @@ int main(){
                     } else
                         al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
                 }
-                /*Shadow rastejando*/
-                //[TODO]
                 
-
+                
+                /*Barra de stamina*/
+                al_draw_filled_rectangle(10, 20, shadow->stamina + 10, 40, collision_color);
                 
 
                 /*Colisão*/
@@ -480,7 +491,7 @@ int main(){
                 /*HP*/
                 al_draw_scaled_bitmap(hp_emerald_sprites, 0, 0, 18, 15, 1100, 10, 18*3, 15*3, 0);
                 al_draw_textf(font, al_map_rgb(255, 255, 255), 1150, 30, 0,  " X %d", shadow->hp);
-                al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
+                //al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
 
                 
                 /*Conferir se ainda tem vida*/
