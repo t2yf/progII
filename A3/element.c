@@ -19,16 +19,11 @@ element *create_element(int x, int y, int width, int height, ALLEGRO_BITMAP *spr
     new_element->height = height;
 
 
-    //[TODO] conferir necessidade
-    //must_init(sprite, "basic element");
 
     return new_element;
 
 }
 
-// int *check_boundaries(int x, int y, int width, int height){
-    
-// }
 
 void destroy_element(element *element){
     if(element)

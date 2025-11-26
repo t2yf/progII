@@ -42,14 +42,16 @@ int update_position(character *actor, enemie **array_enemie, int map_ajustment){
         actor->jump(actor, UP);
         //Se não atingiu o chão, atingir o chão
         if(actor->basics->y  > GROUND){
+            //Chegar ao chão
             actor->basics->y = GROUND;
+            //Chega ao chão
             actor->ground = 1;
+            //Zerar a velocidade 
             actor->vy = 0;
         }
 
         
     } else if(actor->control->down ){
-        //[TODO] fazer ele andar abaixado dps
         retorno = DOWN;
     }
     /*Shadow andando para a direita ou esquerda*/
@@ -66,6 +68,7 @@ int update_position(character *actor, enemie **array_enemie, int map_ajustment){
     if(actor->control->up && actor->ground){
         actor->vy = 50;
         actor->jump(actor, UP);
+        //Não está no chão
         actor->ground =0;
         retorno = UP;
     }
@@ -182,13 +185,13 @@ int main(){
 
     /*Criar inimigos*/
     //Patrols
-    enemie *gamigami = enemie_create(700, 580, 47, 41, 2, PATROL, 0, 0, badniks_sprite); //+30
+    enemie *gamigami = enemie_create(700, 580, 47, 41, 2, PATROL, 0, 0, badniks_sprite); 
     enemie *pierrot = enemie_create(3000, 550, 48, 48, 2, PATROL, 0, 74, badniks_sprite);
     //Idle
-    enemie *leon = enemie_create(3600, 610, 63, 23, 1,  IDLE, 0, 192, badniks_sprite); //+60
+    enemie *leon = enemie_create(3600, 610, 63, 23, 1,  IDLE, 0, 192, badniks_sprite); 
     enemie *mogu = enemie_create(5100, 590, 31, 33, 1, IDLE, 0, 41, badniks_sprite);
     //Runners
-    enemie *rhino = enemie_create(RHINO_INI_POS, 590, 39, 32, 3,RUNNER, 0, 122, badniks_sprite); //+40
+    enemie *rhino = enemie_create(RHINO_INI_POS, 590, 39, 32, 3,RUNNER, 0, 122, badniks_sprite); 
     enemie *kero = enemie_create(KERO_INI_POS, 590, 40, 38, 3, RUNNER, 0,154, badniks_sprite);
 
     /*Colocar inimigos num array*/
@@ -229,6 +232,10 @@ int main(){
                    
                     tela = MENU;
                    
+                } else if(tela == LOSE){
+                    tela = LOSE;
+                } else if( tela == WIN){
+                    tela = WIN;
                 }
                 else if(tela != IN_GAME ){
                     
@@ -279,7 +286,6 @@ int main(){
                 int rolling;
                 /*Ajustar Rolling Background*/
                 if(shadow->fix_camera){
-                    /*[TODO]Mudar dps velocidade*/
                     rolling = shadow->vx;
                 } else rolling = 0;
 
@@ -352,7 +358,6 @@ int main(){
                 /*Leon - Idle*/
                 int leon_frameX;
                 if(leon->basics->x + leon->basics->width > map_ajustment && leon->basics->x + leon->basics->width  < map_ajustment + X_SCREEN){
-                    //printf("Leon X: %d\n", leon->basics->x);
                     leon_frameX = (al_get_timer_count(timer)) %6;
                     al_draw_scaled_bitmap(badniks_sprite, leon->sourceX + (leon->basics->width*leon_frameX), leon->sourceY, leon->basics->width, leon->basics->height, leon->basics->x-map_ajustment, leon->basics->y, leon->basics->width*2, leon->basics->height*2, 0);
                 }
@@ -379,7 +384,7 @@ int main(){
                     int red_emerald_collide = simple_collide(shadow->basics->x, shadow->basics->y, shadow->basics->x + shadow->basics->width*SPRITE_MULT_FACTOR, shadow->basics->y + shadow->basics->height*SPRITE_MULT_FACTOR, red_emerald_x - map_ajustment, GROUND, red_emerald_x + 15 - map_ajustment, GROUND + 15);
                     if(red_emerald_collide){
                         red_emerald_visible = 0;
-                        shadow->hp += 3;
+                        shadow->hp += 5;
                     }
                 }
 
@@ -388,7 +393,6 @@ int main(){
 
 
                 /*Plotar spikes*/
-                //[TODO]
                 if(spikes_x + spikes_width > map_ajustment && spikes_x + spikes_width < map_ajustment + X_SCREEN){
                     al_draw_scaled_bitmap(spikes, 0, 0, spikes_width, spikes_height, spikes_x - map_ajustment, spikes_y, spikes_width, spikes_height, 0);
 
@@ -414,7 +418,6 @@ int main(){
                             shadow->basics->x = spikes_x + spikes_width - map_ajustment ;
                         }
                         shadow->collide = 1; 
-                        //shadow->hp -= 1;
                         if(damage_counter == 0){
                             shadow->hp -=1;
                             damage_counter = 30;
@@ -442,7 +445,6 @@ int main(){
                     if(shadow->collide == 1){
                         al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
 
-                        //shadow->collide = 0;
                     } else
                         al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
                 } 
@@ -477,7 +479,6 @@ int main(){
                     if(shadow->collide == 1){
                         al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
 
-                        //shadow->collide = 0;
                     } else
                         al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
                 } 
@@ -493,7 +494,6 @@ int main(){
                     if(shadow->collide == 1){
                         al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX + (shadow_width*frameX)
                         , shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir); //
-                        //shadow->collide = 0;
                     }else
                         al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX + (shadow_width*frameX), shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
 
@@ -509,23 +509,21 @@ int main(){
                     if(shadow->collide == 1){
                         al_draw_tinted_scaled_bitmap(shadow_sprite, collision_color, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
 
-                        //shadow->collide = 0;
                     } else
                         al_draw_scaled_bitmap(shadow_sprite, shadow_sourceX, shadow_souceY, shadow_width, shadow_height, shadow->basics->x, shadow->basics->y, shadow_width*SPRITE_MULT_FACTOR, shadow_height*SPRITE_MULT_FACTOR, shadow_dir);
                 }
                 
                 
                 /*Barra de stamina*/
-                al_draw_filled_rectangle(10, 20, shadow->stamina + 10, 40, collision_color);
-
-                //al_draw_filled_rectangle(500, 100, 600, 600, collision_color);
-                
+                al_draw_filled_rectangle(10, 20, shadow->stamina + 10, 40, collision_color);                
 
                 /*Colisão*/
                 if(shadow->collide == 1){
                     shadow->collide = 0;
                     
                 }
+
+                /*A cada frame o counter diminui, como são 30 fps, a cada segundo pode tomar outro hit*/
                 damage_counter --;
                 if(damage_counter < 0){
                     damage_counter = 0;
@@ -533,7 +531,6 @@ int main(){
                 /*HP*/
                 al_draw_scaled_bitmap(hp_emerald_sprites, 0, 0, 18, 15, 1100, 10, 18*3, 15*3, 0);
                 al_draw_textf(font, al_map_rgb(255, 255, 255), 1150, 30, 0,  " X %d", shadow->hp);
-                //al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", shadow->basics->x, shadow->basics->y);
 
                 
                 /*Conferir se ainda tem vida*/

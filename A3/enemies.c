@@ -17,9 +17,7 @@ enemie *enemie_create(int x, int y, int width, int height, int damage, int type_
     new_enemie->type_of_movement = type_of_movement;
     new_enemie->sourceX = sourceX;
     new_enemie->sourceY = sourceY;
-   // new_enemie->dir = 1;
 
-    //new_enemie->walk = enemie_move_x;
 
     return new_enemie;
 }
@@ -32,7 +30,6 @@ int update_runner_enemie(enemie *badnik, int vel_relative){
         return -1;
     }
 
-    //printf("vel relative:%d\n", vel_relative);
     int ajust_vel_relative = vel_relative;
     if(vel_relative == 30){
         ajust_vel_relative = 10;
@@ -44,7 +41,6 @@ int update_runner_enemie(enemie *badnik, int vel_relative){
     return 1;
 }
 //ficar andando de um lado pra outro
-//[TODO] tem q add velocidade relativa ao mapa tando aqui quanto no runner
 int update_patrol_enemie(enemie *badnik, char direction, int sprite_mult_factor, int vel_relative){
     if(direction == -1){
         badnik->vx = -PATROL_VEL;

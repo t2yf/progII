@@ -21,20 +21,17 @@ typedef struct enemie{
     int vx; //velocidade do inimigo
     int damage; //quanto de dano o inimigo dá
     int type_of_movement; // posição e direção
-  //  int dir;
 
     float sourceX;
     float sourceY;
-
-    //void (*walk)(struct enemie *badnik, char direction);
 
 
 } enemie;
 
 enemie *enemie_create(int x, int y, int width, int height, int damage, int type_of_movement,float sourceX, float sourceY, ALLEGRO_BITMAP *sprite);
-int enemie_move(enemie *badnik, char direction, int sprite_mult_factor, int vel_relative);//void enemie_move_x(enemie *badnik, char direction);
+int enemie_move(enemie *badnik, char direction, int sprite_mult_factor, int vel_relative);
 void enemie_destroy(enemie *badnik);
-//void show_enemie(enemie *badnik, ALLEGRO_BITMAP *sprite, int fps, float sourceX, float sourceY);
+
 
 
 #endif
